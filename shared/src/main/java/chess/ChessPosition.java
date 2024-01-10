@@ -8,7 +8,22 @@ package chess;
  */
 public class ChessPosition {
 
+    private int pieceRow;
+    private int pieceColumn;
     public ChessPosition(int row, int col) {
+        if (row >= 1 && row <= 8) {
+            pieceRow = row;
+        }
+        else {
+            throw new RuntimeException("Row is out of bounds");
+        }
+
+        if (col >= 1 && col <= 8) {
+            pieceColumn = col;
+        }
+        else {
+            throw new RuntimeException("Column is out of bounds");
+        }
     }
 
     /**
@@ -16,7 +31,7 @@ public class ChessPosition {
      * 1 codes for the bottom row
      */
     public int getRow() {
-        throw new RuntimeException("Not implemented");
+        return pieceRow;
     }
 
     /**
@@ -24,6 +39,6 @@ public class ChessPosition {
      * 1 codes for the left row
      */
     public int getColumn() {
-        throw new RuntimeException("Not implemented");
+        return pieceColumn;
     }
 }
