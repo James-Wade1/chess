@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Objects;
+
 /**
  * Represents a single square position on a chess board
  * <p>
@@ -24,6 +26,19 @@ public class ChessPosition {
         else {
             throw new RuntimeException("Column is out of bounds");
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPosition that = (ChessPosition) o;
+        return pieceRow == that.pieceRow && pieceColumn == that.pieceColumn;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceRow, pieceColumn);
     }
 
     /**
