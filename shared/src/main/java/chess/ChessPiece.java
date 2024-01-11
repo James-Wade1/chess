@@ -3,6 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -18,6 +19,19 @@ public class ChessPiece {
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         teamColor = pieceColor;
         pieceType = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceType == that.pieceType && teamColor == that.teamColor;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceType, teamColor);
     }
 
     /**
@@ -271,11 +285,13 @@ public class ChessPiece {
 
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<ChessMove>();
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
+        int myRow = myPosition.getRow();
+        int myCol = myPosition.getColumn();
 
         // Note: col is the vertical axis on the chessboard
 
+        int row = myRow;
+        int col = myCol;
         //Traveling to top right
         outer:
         while(row <= 8) {
@@ -293,8 +309,8 @@ public class ChessPiece {
             }
         }
 
-        row = myPosition.getRow();
-        col = myPosition.getColumn();
+        row = myRow;
+        col = myCol;
 
         // Go to top left
         outer:
@@ -313,8 +329,8 @@ public class ChessPiece {
             }
         }
 
-        row = myPosition.getRow();
-        col = myPosition.getColumn();
+        row = myRow;
+        col = myCol;
 
         // Go to bottom right
         outer:
@@ -333,8 +349,8 @@ public class ChessPiece {
             }
         }
 
-        row = myPosition.getRow();
-        col = myPosition.getColumn();
+        row = myRow;
+        col = myCol;
 
         // Go to bottom left
         outer:
@@ -358,8 +374,10 @@ public class ChessPiece {
 
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<ChessMove>();
-        int myRow = myPosition.getRow();
-        int myCol = myPosition.getColumn();
+
+        moves.addAll(bishopMoves(board, myPosition));
+        moves.addAll(rookMoves(board, myPosition));
+
         return moves;
     }
 
