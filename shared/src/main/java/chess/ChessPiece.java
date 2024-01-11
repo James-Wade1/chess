@@ -52,6 +52,9 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        if (board.getPiece(myPosition) == null) {
+            throw new RuntimeException("No piece on the board; invalid move");
+        }
+        return null;
     }
 }
