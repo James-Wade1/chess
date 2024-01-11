@@ -1,4 +1,6 @@
 package chess;
+import java.sql.Array;
+import java.util.ArrayList;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -8,8 +10,10 @@ package chess;
  */
 public class ChessBoard {
 
+    private ChessPiece[][] chessBoard;
+
     public ChessBoard() {
-        
+        resetBoard();
     }
 
     /**
@@ -19,7 +23,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        chessBoard[position.getRow()][position.getColumn()] = piece;
     }
 
     /**
@@ -30,7 +34,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        return chessBoard[position.getRow()-1][position.getColumn()-1];
     }
 
     /**
@@ -38,6 +42,30 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        chessBoard = new ChessPiece[8][8];
+
+        ChessPiece.PieceType[] backRow = { ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.KING,
+                ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK};
+
+        // Make white's pieces
+        // Back row
+        for (int i = 0; i < 8; i++) {
+            chessBoard[0][i] = new ChessPiece(ChessGame.TeamColor.WHITE, backRow[i]);
+        }
+        // Pawn Row
+        for (int i = 0; i < 8; i++) {
+            chessBoard[1][i] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        }
+
+        // Make black's pieces
+        // Back row
+        for (int i = 0; i < 8; i++) {
+            chessBoard[7][i] = new ChessPiece(ChessGame.TeamColor.BLACK, backRow[i]);
+        }
+        // Pawn Row
+        for (int i = 0; i < 8; i++) {
+            chessBoard[6][i] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        }
     }
 }
