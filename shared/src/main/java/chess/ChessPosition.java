@@ -12,14 +12,14 @@ public class ChessPosition {
     private int pieceColumn;
     public ChessPosition(int row, int col) {
         if (row >= 1 && row <= 8) {
-            pieceRow = --row;
+            pieceRow = row;
         }
         else {
             throw new RuntimeException("Row is out of bounds");
         }
 
         if (col >= 1 && col <= 8) {
-            pieceColumn = --col;
+            pieceColumn = col;
         }
         else {
             throw new RuntimeException("Column is out of bounds");
