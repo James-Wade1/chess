@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -10,24 +11,26 @@ import java.util.Collection;
  */
 public class ChessGame {
 
+    private TeamColor teamTurn;
+    private ChessBoard board;
     public ChessGame() {
-
+        teamTurn = TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
-     * Set's which teams turn it is
+     * Sets which teams turn it is
      *
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
     }
 
     /**
@@ -46,7 +49,32 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece chessPiece = board.getPiece(startPosition);
+        if (chessPiece == null) {
+            return null;
+        }
+        ChessPiece.PieceType type = chessPiece.getPieceType();
+        Collection<ChessMove> moves;
+
+        moves = switch (type) {
+            case ChessPiece.PieceType.PAWN -> PawnMovesCalculator.pieceMoves(board, startPosition);
+            case ChessPiece.PieceType.ROOK -> RookMovesCalculator.pieceMoves(board, startPosition);
+            case ChessPiece.PieceType.KNIGHT -> KnightMovesCalculator.pieceMoves(board, startPosition);
+            case ChessPiece.PieceType.BISHOP -> BishopMovesCalculator.pieceMoves(board, startPosition);
+            case ChessPiece.PieceType.QUEEN -> QueenMovesCalculator.pieceMoves(board, startPosition);
+            case ChessPiece.PieceType.KING -> KingMovesCalculator.pieceMoves(board, startPosition);
+        };
+
+        /*
+        If the king is in check, and...
+            - the piece to be moved is the king, check to see if he is in checkmate, if not, find the valid moves he can make
+            - the piece to be moved is not the king, its set of moves has to bring the king out of check, either by
+                1) killing the piece that has it in check (which if there is more than one, this won't be valid)
+                2) blocking the piece that has it in check (which if there is more than one, this won't be valid)
+                Note: if the king is doubly in check, then you have to move the king. Therefore, if the king is doubly in check, and the selected piece to move is not the king, then there are no valid moves
+         */
+
+        return moves;
     }
 
     /**
@@ -56,7 +84,18 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition currentPosition = move.getStartPosition();
+        HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(currentPosition);
+
+        if (validMoves.contains(move)) {
+            ChessPiece chessPiece = board.getPiece(currentPosition);
+            //If enemy piece is on finalPosition, then remove that piece and place team's piece there
+            //If enemy piece in not on finalPosition, then just place that piece in the new spot
+            //If promotion piece is not null, change piece type
+        }
+        else {
+            throw new InvalidMoveException();
+        }
     }
 
     /**
@@ -67,6 +106,7 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        //Maybe monitor this by having a hashset of all the pieces that have the King in their line of sight? But that would require a lot of computations
     }
 
     /**
@@ -77,6 +117,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        //If not in check, then return false
     }
 
     /**
@@ -88,6 +129,8 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        //Keep a hashset in chessboard which keeps track of all the pieces remaining. When they're captured, remove them from this hashset. Iterate through all of the remaining pieces to see if there are valid moves left
+        //Assuming this method and the check/checkmate methods above are called at the beginning of each round, you could also store the validMoves in a dictionary for each piece to be called later
     }
 
     /**
@@ -96,7 +139,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -105,6 +148,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 }
