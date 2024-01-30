@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -49,30 +50,27 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        ChessPiece chessPiece = board.getPiece(startPosition);
-        if (chessPiece == null) {
+
+        ChessPiece piece = board.getPiece(startPosition);
+
+        if (piece == null) {
             return null;
         }
-        ChessPiece.PieceType type = chessPiece.getPieceType();
-        Collection<ChessMove> moves;
 
-        moves = switch (type) {
-            case ChessPiece.PieceType.PAWN -> PawnMovesCalculator.pieceMoves(board, startPosition);
-            case ChessPiece.PieceType.ROOK -> RookMovesCalculator.pieceMoves(board, startPosition);
-            case ChessPiece.PieceType.KNIGHT -> KnightMovesCalculator.pieceMoves(board, startPosition);
-            case ChessPiece.PieceType.BISHOP -> BishopMovesCalculator.pieceMoves(board, startPosition);
-            case ChessPiece.PieceType.QUEEN -> QueenMovesCalculator.pieceMoves(board, startPosition);
-            case ChessPiece.PieceType.KING -> KingMovesCalculator.pieceMoves(board, startPosition);
-        };
+        HashSet<ChessMove> moves = piece.pieceMoves(board, startPosition);
+        ChessBoard boardCopy = new ChessBoard(this.board); //Store the old board
 
-        /*
-        If the king is in check, and...
-            - the piece to be moved is the king, check to see if he is in checkmate, if not, find the valid moves he can make
-            - the piece to be moved is not the king, its set of moves has to bring the king out of check, either by
-                1) killing the piece that has it in check (which if there is more than one, this won't be valid)
-                2) blocking the piece that has it in check (which if there is more than one, this won't be valid)
-                Note: if the king is doubly in check, then you have to move the king. Therefore, if the king is doubly in check, and the selected piece to move is not the king, then there are no valid moves
-         */
+        for (Iterator<ChessMove> i = moves.iterator(); i.hasNext();) {
+            ChessMove move = i.next();
+            movePiece(move);
+            if (isInCheck(piece.getTeamColor())) {
+                i.remove();
+            }
+
+            board = new ChessBoard(boardCopy);
+        }
+
+        board = boardCopy;
 
         return moves;
     }
@@ -85,13 +83,24 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition currentPosition = move.getStartPosition();
-        HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(currentPosition);
 
-        if (validMoves.contains(move)) {
-            ChessPiece chessPiece = board.getPiece(currentPosition);
-            //If enemy piece is on finalPosition, then remove that piece and place team's piece there
-            //If enemy piece in not on finalPosition, then just place that piece in the new spot
-            //If promotion piece is not null, change piece type
+        if (board.getPiece(currentPosition) != null && getTeamTurn() == board.getPiece(currentPosition).getTeamColor()) {
+            HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(currentPosition);
+            if (validMoves.contains(move)) {
+                movePiece(move);
+                if (move.getPromotionPiece() != null) {
+                    board.getPiece(move.getEndPosition()).setPieceType(move.getPromotionPiece());
+                }
+                if (getTeamTurn() == TeamColor.WHITE) {
+                    setTeamTurn(TeamColor.BLACK);
+                }
+                else {
+                    setTeamTurn(TeamColor.WHITE);
+                }
+            }
+            else {
+                throw new InvalidMoveException();
+            }
         }
         else {
             throw new InvalidMoveException();
@@ -105,7 +114,26 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        HashSet<ChessPosition> opponentPieces;
+
+        ChessPosition kingPosition = board.getKingPosition(teamColor);
+
+        if (teamColor == TeamColor.WHITE) {
+            opponentPieces = board.getColorPieces(TeamColor.BLACK);
+        }
+        else {
+            opponentPieces = board.getColorPieces(TeamColor.WHITE);
+        }
+
+        for (ChessPosition position : opponentPieces) {
+            HashSet<ChessMove> potentialMoves = board.getPiece(position).pieceMoves(board,position);
+            for (ChessMove potentialMove : potentialMoves) {
+                if (potentialMove.getEndPosition().equals(kingPosition)) {
+                    return true;
+                }
+            }
+        }
+        return false;
         //Maybe monitor this by having a hashset of all the pieces that have the King in their line of sight? But that would require a lot of computations
     }
 
@@ -116,8 +144,10 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
-        //If not in check, then return false
+        ChessPosition kingPosition = board.getKingPosition(teamColor);
+        HashSet<ChessMove> potentialMoves = board.getPiece(kingPosition).pieceMoves(board,kingPosition);
+
+        return isInCheck(teamColor) && isInStalemate(teamColor);
     }
 
     /**
@@ -128,9 +158,23 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
-        //Keep a hashset in chessboard which keeps track of all the pieces remaining. When they're captured, remove them from this hashset. Iterate through all of the remaining pieces to see if there are valid moves left
-        //Assuming this method and the check/checkmate methods above are called at the beginning of each round, you could also store the validMoves in a dictionary for each piece to be called later
+        ChessPosition kingPosition = board.getKingPosition(teamColor);
+        HashSet<ChessMove> potentialMoves = board.getPiece(kingPosition).pieceMoves(board,kingPosition);
+
+        ChessBoard boardCopy = new ChessBoard(board);
+
+        for (ChessMove potentialMove : potentialMoves) {
+            movePiece(potentialMove);
+            if (!isInCheck(teamColor)) {
+                return false;
+            }
+
+            board = new ChessBoard(boardCopy);
+        }
+
+        board = boardCopy;
+
+        return true;
     }
 
     /**
@@ -149,5 +193,11 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    private void movePiece(ChessMove move) {
+        board.removePiece(move.getEndPosition());
+        board.addPiece(move.getEndPosition(),board.getPiece(move.getStartPosition()));
+        board.removePiece(move.getStartPosition());
     }
 }

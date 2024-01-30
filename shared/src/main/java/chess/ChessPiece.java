@@ -16,9 +16,12 @@ public class ChessPiece {
     private ChessPiece.PieceType pieceType;
     private ChessGame.TeamColor teamColor;
 
+    private boolean hasMoved;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         teamColor = pieceColor;
         pieceType = type;
+        hasMoved = false;
     }
 
     @Override
@@ -60,6 +63,21 @@ public class ChessPiece {
         return pieceType;
     }
 
+    public boolean isHasMoved() {
+        return hasMoved;
+    }
+
+    public void setHasMoved(boolean hasMoved) {
+        this.hasMoved = hasMoved;
+    }
+
+    /**
+     * @param type of chess piece to promote to
+     */
+    public void setPieceType(PieceType type) {
+        this.pieceType = type;
+    }
+
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -67,20 +85,20 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+    public HashSet<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         if (board.getPiece(myPosition) == null) {
             return null;
         }
         PieceType type = board.getPiece(myPosition).getPieceType();
-        Collection<ChessMove> moves;
+        HashSet<ChessMove> moves;
 
         moves = switch (type) {
-            case PieceType.PAWN -> PawnMovesCalculator.pieceMoves(board, myPosition);
-            case PieceType.ROOK -> RookMovesCalculator.pieceMoves(board, myPosition);
-            case PieceType.KNIGHT -> KnightMovesCalculator.pieceMoves(board, myPosition);
-            case PieceType.BISHOP -> BishopMovesCalculator.pieceMoves(board, myPosition);
-            case PieceType.QUEEN -> QueenMovesCalculator.pieceMoves(board, myPosition);
-            case PieceType.KING -> KingMovesCalculator.pieceMoves(board, myPosition);
+            case PieceType.PAWN -> (HashSet<ChessMove>) PawnMovesCalculator.pieceMoves(board, myPosition);
+            case PieceType.ROOK -> (HashSet<ChessMove>) RookMovesCalculator.pieceMoves(board, myPosition);
+            case PieceType.KNIGHT -> (HashSet<ChessMove>) KnightMovesCalculator.pieceMoves(board, myPosition);
+            case PieceType.BISHOP -> (HashSet<ChessMove>) BishopMovesCalculator.pieceMoves(board, myPosition);
+            case PieceType.QUEEN -> (HashSet<ChessMove>) QueenMovesCalculator.pieceMoves(board, myPosition);
+            case PieceType.KING -> (HashSet<ChessMove>) KingMovesCalculator.pieceMoves(board, myPosition);
         };
 
         return moves;

@@ -37,19 +37,21 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
 
         int row = myRow + travelDirection;
         for (int col = myCol - 1; col <= myCol + 1; col++) {
-            ChessPiece newPositionPiece = board.getPiece(new ChessPosition(row, col));
-            if (col != myCol) { // A diagonal move
-                if (newPositionPiece != null && newPositionPiece.getTeamColor() != myPositionPiece.getTeamColor()) {
-                    for (ChessPiece.PieceType promotionPiece : promotionPieces) {
-                        moves.add(new ChessMove(myPosition, new ChessPosition(row, col), promotionPiece));
+            if (PieceMovesCalculator.inBounds(row, col)) {
+                ChessPiece newPositionPiece = board.getPiece(new ChessPosition(row, col));
+                if (col != myCol) { // A diagonal move
+                    if (newPositionPiece != null && newPositionPiece.getTeamColor() != myPositionPiece.getTeamColor()) {
+                        for (ChessPiece.PieceType promotionPiece : promotionPieces) {
+                            moves.add(new ChessMove(myPosition, new ChessPosition(row, col), promotionPiece));
+                        }
                     }
-                }
-            } else { // A forward move
-                if (newPositionPiece == null) {
-                    for (ChessPiece.PieceType promotionPiece : promotionPieces) {
-                        moves.add(new ChessMove(myPosition, new ChessPosition(row, col), promotionPiece));
-                        if (myRow == startingRow && board.getPiece(new ChessPosition(row + travelDirection, col)) == null) {
-                            moves.add(new ChessMove(myPosition, new ChessPosition(row + travelDirection, col), null));
+                } else { // A forward move
+                    if (newPositionPiece == null) {
+                        for (ChessPiece.PieceType promotionPiece : promotionPieces) {
+                            moves.add(new ChessMove(myPosition, new ChessPosition(row, col), promotionPiece));
+                            if (myRow == startingRow && board.getPiece(new ChessPosition(row + travelDirection, col)) == null) {
+                                moves.add(new ChessMove(myPosition, new ChessPosition(row + travelDirection, col), null));
+                            }
                         }
                     }
                 }
