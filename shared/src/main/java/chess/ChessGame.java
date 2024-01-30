@@ -57,15 +57,25 @@ public class ChessGame {
             return null;
         }
 
+        boolean isKing = (piece.getPieceType() == ChessPiece.PieceType.KING);
+
         HashSet<ChessMove> moves = piece.pieceMoves(board, startPosition);
         ChessBoard boardCopy = new ChessBoard(this.board); //Store the old board
 
         for (Iterator<ChessMove> i = moves.iterator(); i.hasNext();) {
             ChessMove move = i.next();
-            movePiece(move);
+            ChessPosition currentPositionCol = move.getStartPosition();
+            ChessPosition endPositionCol = move.getEndPosition();
+            if (isKing && isCastlingMove(move)) {
+                moveCastling(move);
+            }
+            else {
+                movePiece(move);
+            }
             if (isInCheck(piece.getTeamColor())) {
                 i.remove();
             }
+
 
             board = new ChessBoard(boardCopy);
         }
@@ -83,11 +93,20 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition currentPosition = move.getStartPosition();
+        ChessPiece currentPiece = board.getPiece(currentPosition);
 
-        if (board.getPiece(currentPosition) != null && getTeamTurn() == board.getPiece(currentPosition).getTeamColor()) {
+        if (currentPiece != null && getTeamTurn() == currentPiece.getTeamColor()) {
             HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(currentPosition);
             if (validMoves.contains(move)) {
-                movePiece(move);
+                if (currentPiece.getPieceType() == ChessPiece.PieceType.KING && !currentPiece.isHasMoved() && isCastlingMove(move)) {
+                    currentPiece.setHasMoved(true);
+                    //Set the rook so that it's marked as having moved
+                    moveCastling(move);
+                }
+                else {
+                    movePiece(move);
+                    currentPiece.setHasMoved(true);
+                    }
                 if (move.getPromotionPiece() != null) {
                     board.getPiece(move.getEndPosition()).setPieceType(move.getPromotionPiece());
                 }
@@ -199,5 +218,38 @@ public class ChessGame {
         board.removePiece(move.getEndPosition());
         board.addPiece(move.getEndPosition(),board.getPiece(move.getStartPosition()));
         board.removePiece(move.getStartPosition());
+    }
+
+    private boolean isCastlingMove(ChessMove move) {
+        ChessPosition currentPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+
+        return (currentPosition.getColumn() == endPosition.getColumn() + 2) || (currentPosition.getColumn() == endPosition.getColumn() - 2);
+    }
+
+    private void moveCastling(ChessMove move) {
+        ChessPiece king = board.getPiece(move.getStartPosition());
+        ChessPosition kingPosition = move.getStartPosition();
+        ChessPosition newKingPosition = move.getEndPosition();
+        ChessPosition rookPosition;
+        ChessPosition newRookPosition;
+
+        if (newKingPosition.getColumn() > kingPosition.getColumn()) {
+            rookPosition = new ChessPosition(kingPosition.getRow(), 8);
+            newRookPosition = new ChessPosition(kingPosition.getRow(), 6);
+        }
+        else {
+            rookPosition = new ChessPosition(kingPosition.getRow(), 1);
+            newRookPosition = new ChessPosition(kingPosition.getRow(), 4);
+        }
+        ChessPiece rook = board.getPiece(rookPosition);
+
+        king.setHasMoved(true);
+        rook.setHasMoved(true);
+
+        board.addPiece(newKingPosition, king);
+        board.removePiece(kingPosition);
+        board.addPiece(newRookPosition,rook);
+        board.removePiece(rookPosition);
     }
 }

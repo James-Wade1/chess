@@ -26,6 +26,8 @@ public class KingMovesCalculator implements PieceMovesCalculator {
             PieceMovesCalculator.validPosition(moves, board.getPiece(myPosition), board.getPiece(newPosition), myPosition, newPosition, null);
         }
 
+        PieceMovesCalculator.castlingCalculator(board, myPosition, moves);
+
         return moves;
     }
 }

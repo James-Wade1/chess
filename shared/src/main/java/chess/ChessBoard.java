@@ -29,7 +29,7 @@ public class ChessBoard {
             for (int j = 1; j <= 8; j++) {
                 ChessPiece oldPiece = oldBoard.getPiece(new ChessPosition(i,j));
                 if (oldPiece != null) {
-                    this.addPiece(new ChessPosition(i,j), new ChessPiece(oldPiece.getTeamColor(), oldPiece.getPieceType()));
+                    this.addPiece(new ChessPosition(i,j), new ChessPiece(oldPiece.getTeamColor(), oldPiece.getPieceType(), oldPiece.isHasMoved()));
                 }
             }
         }
@@ -104,8 +104,6 @@ public class ChessBoard {
                     return position;
                 }
             }
-
-            //throw new RuntimeException("White king not found on board");
         }
         else {
             for (ChessPosition position : blackPieces) {
@@ -113,7 +111,6 @@ public class ChessBoard {
                     return position;
                 }
             }
-            //throw new RuntimeException("Black king not found on board");
         }
         return null;
     }

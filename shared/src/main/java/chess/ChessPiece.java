@@ -24,6 +24,12 @@ public class ChessPiece {
         hasMoved = false;
     }
 
+    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type, boolean hasMoved) {
+        teamColor = pieceColor;
+        pieceType = type;
+        this.hasMoved = hasMoved;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
