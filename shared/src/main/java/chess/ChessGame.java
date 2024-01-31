@@ -68,12 +68,16 @@ public class ChessGame {
             ChessPosition endPositionCol = move.getEndPosition();
             if (isKing && isCastlingMove(move)) {
                 moveCastling(move);
+                //needs to check if any of the spots are in check
+                if (isInCheck(piece.getTeamColor()) || isInvalidCastling(piece.getTeamColor())) {
+                    i.remove();
+                }
             }
             else {
                 movePiece(move);
-            }
-            if (isInCheck(piece.getTeamColor())) {
-                i.remove();
+                if (isInCheck(piece.getTeamColor())) {
+                    i.remove();
+                }
             }
 
 
@@ -98,14 +102,19 @@ public class ChessGame {
         if (currentPiece != null && getTeamTurn() == currentPiece.getTeamColor()) {
             HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(currentPosition);
             if (validMoves.contains(move)) {
-                if (currentPiece.getPieceType() == ChessPiece.PieceType.KING && !currentPiece.isHasMoved() && isCastlingMove(move)) {
-                    currentPiece.setHasMoved(true);
-                    //Set the rook so that it's marked as having moved
+                if (currentPiece.getPieceType() == ChessPiece.PieceType.KING  && isCastlingMove(move)) {
+                    board.getPiece(move.getStartPosition()).setHasMoved(true);
+                    if (move.getEndPosition().getColumn() > currentPosition.getColumn()) {
+                        board.getPiece(new ChessPosition(currentPosition.getRow(), 8)).setHasMoved(true);
+                    }
+                    else {
+                        board.getPiece(new ChessPosition(currentPosition.getRow(), 1)).setHasMoved(true);
+                    }
                     moveCastling(move);
                 }
                 else {
+                    board.getPiece(move.getStartPosition()).setHasMoved(true);
                     movePiece(move);
-                    currentPiece.setHasMoved(true);
                     }
                 if (move.getPromotionPiece() != null) {
                     board.getPiece(move.getEndPosition()).setPieceType(move.getPromotionPiece());
@@ -153,7 +162,6 @@ public class ChessGame {
             }
         }
         return false;
-        //Maybe monitor this by having a hashset of all the pieces that have the King in their line of sight? But that would require a lot of computations
     }
 
     /**
@@ -221,10 +229,21 @@ public class ChessGame {
     }
 
     private boolean isCastlingMove(ChessMove move) {
-        ChessPosition currentPosition = move.getStartPosition();
-        ChessPosition endPosition = move.getEndPosition();
+        int currentPositionCol = move.getStartPosition().getColumn();
+        int endPositionCol = move.getEndPosition().getColumn();
+        ChessPosition rookPosition;
 
-        return (currentPosition.getColumn() == endPosition.getColumn() + 2) || (currentPosition.getColumn() == endPosition.getColumn() - 2);
+        ChessPiece king = board.getPiece(move.getStartPosition());
+        if (currentPositionCol < endPositionCol) { // King's side castle
+            rookPosition = new ChessPosition(move.getStartPosition().getRow(), 8);
+        }
+        else {
+            rookPosition = new ChessPosition(move.getStartPosition().getRow(), 1);
+        }
+
+        ChessPiece rook = board.getPiece(rookPosition);
+
+        return (currentPositionCol == endPositionCol + 2) || (currentPositionCol == endPositionCol - 2) && !king.isHasMoved() && !rook.isHasMoved();
     }
 
     private void moveCastling(ChessMove move) {
@@ -251,5 +270,36 @@ public class ChessGame {
         board.removePiece(kingPosition);
         board.addPiece(newRookPosition,rook);
         board.removePiece(rookPosition);
+    }
+
+    public boolean isInvalidCastling(TeamColor teamColor) {
+        HashSet<ChessPosition> opponentPieces;
+
+        ChessPosition kingPosition = board.getKingPosition(teamColor);
+        ChessPosition rookPosition;
+
+        if (board.getPiece(new ChessPosition(kingPosition.getRow(), kingPosition.getColumn()-1)) != null) {
+            rookPosition = new ChessPosition(kingPosition.getRow(), kingPosition.getColumn()-1);
+        }
+        else {
+            rookPosition = new ChessPosition(kingPosition.getRow(), kingPosition.getColumn()+1);
+        }
+
+        if (teamColor == TeamColor.WHITE) {
+            opponentPieces = board.getColorPieces(TeamColor.BLACK);
+        }
+        else {
+            opponentPieces = board.getColorPieces(TeamColor.WHITE);
+        }
+
+        for (ChessPosition position : opponentPieces) {
+            HashSet<ChessMove> potentialMoves = board.getPiece(position).pieceMoves(board,position);
+            for (ChessMove potentialMove : potentialMoves) {
+                if (potentialMove.getEndPosition().equals(rookPosition)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
