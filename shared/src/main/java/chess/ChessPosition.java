@@ -56,4 +56,8 @@ public class ChessPosition {
     public int getColumn() {
         return pieceColumn;
     }
+
+    public boolean isAdjacentCol(ChessPosition otherPosition) {
+        return (this.getColumn() == otherPosition.getColumn()-1 || this.getColumn() == otherPosition.getColumn()+1) && this.getRow() == otherPosition.getRow();
+    }
 }

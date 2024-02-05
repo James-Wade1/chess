@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import static chess.ChessPiece.PieceType.PAWN;
+
 /**
  * For a class that can manage a chess game, making moves on a board
  * <p>
@@ -14,8 +16,15 @@ public class ChessGame {
 
     private TeamColor teamTurn;
     private ChessBoard board;
+
+    boolean previousMoveDoublePawn;
+
+    ChessPosition previousMoveDoublePawnLocation;
+
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
+        previousMoveDoublePawn = false;
+        previousMoveDoublePawnLocation = null;
     }
 
     /**
@@ -58,6 +67,7 @@ public class ChessGame {
         }
 
         boolean isKing = (piece.getPieceType() == ChessPiece.PieceType.KING);
+        boolean isPawn = (piece.getPieceType() == PAWN);
 
         HashSet<ChessMove> moves = piece.pieceMoves(board, startPosition);
         ChessBoard boardCopy = new ChessBoard(this.board); //Store the old board
@@ -68,7 +78,6 @@ public class ChessGame {
             ChessPosition endPositionCol = move.getEndPosition();
             if (isKing && isCastlingMove(move)) {
                 moveCastling(move);
-                //needs to check if any of the spots are in check
                 if (isInCheck(piece.getTeamColor()) || isInvalidCastling(piece.getTeamColor())) {
                     i.remove();
                 }
@@ -84,6 +93,13 @@ public class ChessGame {
             board = new ChessBoard(boardCopy);
         }
 
+        /* Check for en passant valid move */
+        if (isPawn && previousMoveDoublePawn) {
+            ChessPosition passingPawn = previousMoveDoublePawnLocation;
+            if (startPosition.isAdjacentCol(passingPawn)) { // Checks if it's an en passant move
+                moves.add(getEnPassantMove(startPosition, previousMoveDoublePawnLocation));
+            }
+        }
         board = boardCopy;
 
         return moves;
@@ -111,14 +127,30 @@ public class ChessGame {
                         board.getPiece(new ChessPosition(currentPosition.getRow(), 1)).setHasMoved(true);
                     }
                     moveCastling(move);
+                    previousMoveDoublePawn = false;
+                    previousMoveDoublePawnLocation = null;
+                }
+                else if (currentPiece.getPieceType() == PAWN && isEnPassantMove(move)) {
+                    moveEnPassant(move);
+                    previousMoveDoublePawn = false;
+                    previousMoveDoublePawnLocation = null;
+                }
+                else if (currentPiece.getPieceType() == PAWN && isDoublePawnMove(move)) {
+                    movePiece(move);
+                    previousMoveDoublePawnLocation = move.getEndPosition();
+                    previousMoveDoublePawn = true;
                 }
                 else {
                     board.getPiece(move.getStartPosition()).setHasMoved(true);
                     movePiece(move);
-                    }
+                    previousMoveDoublePawn = false;
+                    previousMoveDoublePawnLocation = null;
+                }
+
                 if (move.getPromotionPiece() != null) {
                     board.getPiece(move.getEndPosition()).setPieceType(move.getPromotionPiece());
                 }
+
                 if (getTeamTurn() == TeamColor.WHITE) {
                     setTeamTurn(TeamColor.BLACK);
                 }
@@ -126,6 +158,7 @@ public class ChessGame {
                     setTeamTurn(TeamColor.WHITE);
                 }
             }
+
             else {
                 throw new InvalidMoveException();
             }
@@ -301,5 +334,60 @@ public class ChessGame {
             }
         }
         return false;
+    }
+
+    public boolean isDoublePawnMove(ChessMove move) {
+        ChessGame.TeamColor color = board.getPiece(move.getStartPosition()).getTeamColor();
+        int homeRow;
+        int doubleMoveRow;
+
+        if (color == TeamColor.WHITE) {
+            homeRow = 2;
+            doubleMoveRow = 4;
+        }
+        else {
+            homeRow = 7;
+            doubleMoveRow = 5;
+        }
+
+        return move.getStartPosition().getRow() == homeRow && move.getEndPosition().getRow() == doubleMoveRow;
+    }
+
+    public ChessMove getEnPassantMove(ChessPosition startPosition, ChessPosition previousMoveDoublePawnLocation) {
+        ChessMove move;
+
+        TeamColor color = board.getPiece(startPosition).getTeamColor();
+
+        int currentColumn = startPosition.getColumn();
+        int passingPawnColumn = previousMoveDoublePawnLocation.getColumn();
+
+        if (color == TeamColor.WHITE) {
+            move = new ChessMove(startPosition, new ChessPosition(6,passingPawnColumn),null);
+        }
+        else {
+            move = new ChessMove(startPosition, new ChessPosition(3,passingPawnColumn),null);
+        }
+
+        return move;
+    }
+
+    public boolean isEnPassantMove(ChessMove move) {
+        return board.getPiece(move.getEndPosition()) == null && move.getEndPosition().getColumn() != move.getStartPosition().getColumn();
+    }
+
+    private void moveEnPassant(ChessMove move) {
+        ChessPosition currentPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+        ChessPiece teamPiece = board.getPiece(currentPosition);
+        TeamColor color = teamPiece.getTeamColor();
+
+        movePiece(move);
+
+        if (color == TeamColor.WHITE) {
+            board.removePiece(new ChessPosition(endPosition.getRow()-1,endPosition.getColumn()));
+        }
+        else {
+            board.removePiece(new ChessPosition(endPosition.getRow()+1,endPosition.getColumn()));
+        }
     }
 }
