@@ -97,7 +97,11 @@ public class ChessGame {
         if (isPawn && previousMoveDoublePawn) {
             ChessPosition passingPawn = previousMoveDoublePawnLocation;
             if (startPosition.isAdjacentCol(passingPawn)) { // Checks if it's an en passant move
-                moves.add(getEnPassantMove(startPosition, previousMoveDoublePawnLocation));
+                ChessMove move = getEnPassantMove(startPosition, previousMoveDoublePawnLocation);
+                moveEnPassant(move);
+                if (!isInCheck(piece.getTeamColor())) {
+                    moves.add(move);
+                }
             }
         }
         board = boardCopy;
