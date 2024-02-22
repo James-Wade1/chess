@@ -15,15 +15,18 @@ public class LoginService extends Service {
 
     public AuthData loginUser(UserData returningUser) throws ResponseException {
         if (returningUser.username().isEmpty() || returningUser.password().isEmpty()) {
-            throw new ResponseException(400, "Error: Unauthorized");
+            throw new ResponseException(401, "Error: Unauthorized");
         }
 
         UserData databankUser = myUserDAO.getUser(returningUser.username());
+        if (databankUser == null) {
+            throw new ResponseException(401, "Error: Unauthorized");
+        }
         if (databankUser.password().equals(returningUser.password())) {
             return myAuthDAO.createAuth(returningUser.username());
         }
         else {
-            throw new ResponseException(400, "Error: Unauthorized");
+            throw new ResponseException(401, "Error: Unauthorized");
         }
     }
 

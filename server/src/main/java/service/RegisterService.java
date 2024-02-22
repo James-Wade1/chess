@@ -12,6 +12,9 @@ public class RegisterService extends Service {
     }
 
     public AuthData registerUser(UserData newUser) throws ResponseException {
+        if (newUser.username() == null || newUser.password() == null || newUser.email() == null) {
+            throw new ResponseException(400, "Error: bad request");
+        }
         if (newUser.username().isEmpty() || newUser.password().isEmpty() || newUser.email().isEmpty()) {
             throw new ResponseException(400, "Error: bad request");
         }
