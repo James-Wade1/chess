@@ -2,9 +2,9 @@ package dataAccess;
 
 import model.AuthData;
 
-public interface AuthDAO {
+public interface AuthDAO extends DAO {
 
-    public String createAuth(String username);
+    public AuthData createAuth(String username);
 
     public AuthData getAuth(String authToken);
 

@@ -1,9 +1,9 @@
 package dataAccess;
 import model.UserData;
 
-public interface UserDAO {
+public interface UserDAO extends DAO {
 
-    public void createUser(String username, String password, String email);
+    public void createUser(UserData newUser);
 
     public UserData getUser(String username);
 

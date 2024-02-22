@@ -13,8 +13,8 @@ public class MemoryUserDAO implements UserDAO {
     public MemoryUserDAO() {}
 
     /** Creates new user assuming that one is not already in the hashset*/
-    public void createUser(String username, String password, String email) {
-        userDataset.add(new UserData(username, password, email));
+    public void createUser(UserData newUser) {
+        userDataset.add(newUser);
     }
 
     /** Checks if there is a user already with that username. If so, return that userData. If not, return null*/

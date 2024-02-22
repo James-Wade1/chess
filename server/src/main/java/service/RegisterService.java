@@ -1,22 +1,24 @@
 package service;
 
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*;
+import model.AuthData;
+import model.UserData;
 import responseException.ResponseException;
 
-public class RegisterService {
+public class RegisterService extends Service {
 
-    MemoryAuthDAO myAuthDAO = new MemoryAuthDAO();
-    MemoryGameDAO myGameDAO = new MemoryGameDAO();
-    MemoryUserDAO myUserDAO = new MemoryUserDAO();
+    public RegisterService(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
+        super(authDAO, gameDAO, userDAO);
+    }
 
-    public RegisterService() {}
+    public AuthData registerUser(UserData newUser) throws ResponseException {
+        if (newUser.username().isEmpty() || newUser.password().isEmpty() || newUser.email().isEmpty()) {
+            throw new ResponseException(400, "Error: bad request");
+        }
 
-    public String registerUser(String username, String password, String email) throws ResponseException {
-        if (myUserDAO.getUser(username) == null) {
-            myUserDAO.createUser(username, password, email);
-            return myAuthDAO.createAuth(username);
+        if (myUserDAO.getUser(newUser.username()) == null) {
+            myUserDAO.createUser(newUser);
+            return myAuthDAO.createAuth(newUser.username());
         }
         else {
             throw new ResponseException(403, "Error: already taken");

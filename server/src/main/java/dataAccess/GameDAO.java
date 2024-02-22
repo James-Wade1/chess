@@ -4,7 +4,7 @@ import model.GameData;
 
 import java.util.HashSet;
 
-public interface GameDAO {
+public interface GameDAO extends DAO {
 
     public void createGame(String gameName);
 

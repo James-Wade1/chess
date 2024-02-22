@@ -9,8 +9,13 @@ import spark.Response;
 public class ExceptionHandler {
 
     public ExceptionHandler() {}
-    public void exceptionHandler(ResponseException ex, Request req, Response res) {
+    public void responseExceptionHandler(ResponseException ex, Request req, Response res) {
         res.status(ex.StatusCode());
+        res.body(new Gson().toJson(new ErrorMessage(ex.getMessage())));
+    }
+
+    public void generalExceptionHandler(Exception ex, Request req, Response res) {
+        res.status(500);
         res.body(new Gson().toJson(new ErrorMessage(ex.getMessage())));
     }
 }
