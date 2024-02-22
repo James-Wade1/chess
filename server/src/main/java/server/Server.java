@@ -12,7 +12,7 @@ public class Server {
 
         clearHandler myClearHandler = new clearHandler();
 
-        Spark.delete("/db", myClearHandler::deleteData);
+        Spark.delete("/db", myClearHandler::clearData);
 
         Spark.awaitInitialization();
         return Spark.port();
