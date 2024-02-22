@@ -1,17 +1,12 @@
 package handlers;
 
-import com.google.gson.Gson;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
 import dataAccess.UserDAO;
-import model.AuthData;
-import org.eclipse.jetty.websocket.server.ServletWebSocketResponse;
 import responseException.ResponseException;
 import service.LogoutService;
 import spark.Request;
 import spark.Response;
-
-import java.util.Set;
 
 public class LogoutHandler extends Handler {
 
