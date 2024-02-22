@@ -2,14 +2,12 @@ package server;
 
 import dataAccess.*;
 import handlers.ExceptionHandler;
-import org.eclipse.jetty.server.Authentication;
 import service.SystemService;
 import spark.*;
 import handlers.*;
 import responseException.ResponseException;
 
 import java.util.HashSet;
-import java.util.List;
 
 public class Server {
 
@@ -48,13 +46,14 @@ public class Server {
         SystemHandler mySystemHandler = new SystemHandler(myAuthDAO, myGameDAO, myUserDAO);
         RegisterHandler myRegisterHandler = new RegisterHandler(myAuthDAO, myGameDAO, myUserDAO);
         LoginHandler myLoginHandler = new LoginHandler(myAuthDAO, myGameDAO, myUserDAO);
+        LogoutHandler myLogoutHandler = new LogoutHandler(myAuthDAO, myGameDAO, myUserDAO);
         ExceptionHandler myExceptionHandler = new ExceptionHandler();
 
         /*Define HTTP endpoints*/
         Spark.delete("/db", mySystemHandler::clearData);
         Spark.post("/user", myRegisterHandler::registerUser);
         Spark.post("/session", myLoginHandler::loginUser);
-        //Spark.delete("/session", )
+        Spark.delete("/session", myLogoutHandler::logoutUser);
 
         Spark.exception(ResponseException.class, myExceptionHandler::responseExceptionHandler);
         Spark.exception(Exception.class, myExceptionHandler::generalExceptionHandler);

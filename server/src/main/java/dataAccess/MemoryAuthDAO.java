@@ -21,7 +21,7 @@ public class MemoryAuthDAO implements AuthDAO {
 
     public AuthData getAuth(String authToken) {
         for (AuthData authData : authDataset) {
-            if (authData.authtoken().equals(authToken)) {
+            if (authData.authToken().equals(authToken)) {
                 return authData;
             }
         }
@@ -32,7 +32,7 @@ public class MemoryAuthDAO implements AuthDAO {
     public void deleteAuth(String authToken) throws DataAccessException {
         AuthData dataToRemove = null;
         for (AuthData authData : authDataset) {
-            if (authData.authtoken().equals(authToken)) {
+            if (authData.authToken().equals(authToken)) {
                 dataToRemove = authData;
             }
         }
