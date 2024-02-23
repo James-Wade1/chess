@@ -28,11 +28,13 @@ class LogoutServiceTest extends TestVariables {
 
     @Test
     void logoutUserFail() {
+        int statusCode = 0;
         String authToken = myAuthDAO.createAuth("username").authToken();
         try {
             myLogoutService.logoutUser(authToken.toUpperCase());
         } catch (ResponseException ex) {
-            Assertions.assertEquals(ex.StatusCode(),401, "Status code is not 401 unauthorized");
+            statusCode = ex.StatusCode();
         }
+        Assertions.assertEquals(statusCode,401, "Status code is not 401 unauthorized");
     }
 }

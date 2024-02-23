@@ -29,5 +29,8 @@ public class TestVariables {
                 this.myGameDAO = (GameDAO)myDAO;
             }
         }
+
+        SystemService mySystemService = new SystemService(myAuthDAO, myGameDAO, myUserDAO);
+        mySystemService.clearData();
     }
 }

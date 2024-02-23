@@ -28,13 +28,15 @@ class LoginServiceTest extends TestVariables{
     }
     @Test
     void loginUserFail() {
+        int statusCode = 0;
         UserData user = new UserData("username", "password", "email@gmail.com");
         myUserDAO.createUser(user);
         try {
             AuthData newAuthData = myLoginService.loginUser(new UserData("username", "pass", "email@gmail.com"));
             Assertions.assertNotNull(newAuthData);
         } catch (ResponseException ex) {
-            Assertions.assertEquals(ex.StatusCode(), 401, "Status is not 401 unauthorized");
+            statusCode = ex.StatusCode();
         }
+        Assertions.assertEquals(statusCode, 401, "Status is not 401 unauthorized");
     }
 }

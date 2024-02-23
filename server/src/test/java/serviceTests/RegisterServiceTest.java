@@ -29,13 +29,14 @@ class RegisterServiceTest extends TestVariables {
 
     @Test
     void registerUserFail() {
+        int statusCode = 0;
         UserData newUser = new UserData("username", "password",null);
         try {
             myRegisterService.registerUser(newUser);
             Assertions.assertEquals(newUser, myUserDAO.getUser(newUser.username()));
         } catch (ResponseException ex) {
-            Assertions.assertEquals(400, ex.StatusCode(), "Status code was not 400 bad request");
+            statusCode = ex.StatusCode();
         }
-
+        Assertions.assertEquals(statusCode, 400, "Status code was not 400 bad request");
     }
 }
