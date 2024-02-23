@@ -1,17 +1,22 @@
 package serviceTests;
 
 import dataAccess.*;
+import model.UserData;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.SystemService;
 
 import java.util.HashSet;
-import java.util.List;
+import java.util.List;;
 
-import static org.junit.jupiter.api.Assertions.*;
+class SystemServiceTest extends TestVariables {
 
-class SystemServiceTest {
-
+    SystemService mySystemService = null;
+    @BeforeEach
+    void createSystemService() {
+        mySystemService = new SystemService(myAuthDAO, myGameDAO, myUserDAO);
+    }
     @Test
     void instantiateDAOs() {
         HashSet<DAO> myDAOs = SystemService.instantiateDAOs();
@@ -38,5 +43,15 @@ class SystemServiceTest {
 
     @Test
     void clearData() {
+        myUserDAO.createUser(new UserData("username","password","email@gmail.com"));
+        myGameDAO.createGame("NewGame");
+        myAuthDAO.createAuth("username");
+
+        mySystemService.clearData();
+        int expectedSize = 0;
+
+        Assertions.assertEquals(expectedSize, myUserDAO.getSize());
+        Assertions.assertEquals(expectedSize, myAuthDAO.getSize());
+        Assertions.assertEquals(expectedSize, myGameDAO.getSize());
     }
 }

@@ -13,4 +13,6 @@ public interface AuthDAO extends DAO {
     public void deleteAuth(String authToken) throws DataAccessException;
 
     public void clearAuthData();
+
+    public int getSize();
 }

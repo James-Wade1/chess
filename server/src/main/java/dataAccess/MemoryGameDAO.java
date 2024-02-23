@@ -61,4 +61,8 @@ public class MemoryGameDAO implements GameDAO {
     public void clearGames() {
         gameDataset = new HashSet<GameData>();
     }
+
+    public int getSize() {
+        return gameDataset.size();
+    }
 }
