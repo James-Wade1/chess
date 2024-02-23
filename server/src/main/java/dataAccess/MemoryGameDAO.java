@@ -14,9 +14,10 @@ public class MemoryGameDAO implements GameDAO {
 
     public MemoryGameDAO() {}
 
-    public void createGame(String gameName) {
+    public int createGame(String gameName) {
         int gameID = randomID.nextInt(10000);
         gameDataset.add(new GameData(gameID, "", "", gameName, new ChessGame()));
+        return gameID;
     }
 
     public GameData getGame(String gameName) {
@@ -28,18 +29,33 @@ public class MemoryGameDAO implements GameDAO {
         return null;
     }
 
+    public GameData getGame(int gameID) {
+        for (GameData game : gameDataset) {
+            if (game.gameID() == gameID) {
+                return game;
+            }
+        }
+        return null;
+    }
+
     public HashSet<GameData> listGames() {
         return gameDataset;
     }
 
-    public void updateGame(String gameName) throws DataAccessException {
+    public void updateGame(GameData updatedGame) throws DataAccessException {
+        GameData oldGame = null;
         for (GameData game : gameDataset) {
-            if (game.gameName().equals(gameName)) {
-                //FIXME
+            if (game.gameID() == updatedGame.gameID()) {
+                oldGame = game;
             }
         }
-
-        throw new DataAccessException("Game does not exist");
+        if (oldGame == null) {
+            throw new DataAccessException("Game does not exist");
+        }
+        else {
+            gameDataset.remove(oldGame);
+            gameDataset.add(updatedGame);
+        }
     }
 
     public void clearGames() {

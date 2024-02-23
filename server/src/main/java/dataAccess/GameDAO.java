@@ -6,13 +6,15 @@ import java.util.HashSet;
 
 public interface GameDAO extends DAO {
 
-    public void createGame(String gameName);
+    public int createGame(String gameName);
 
     public GameData getGame(String gameName);
 
+    public GameData getGame(int gameID);
+
     public HashSet<GameData> listGames();
 
-    public void updateGame(String gameName) throws DataAccessException;
+    public void updateGame(GameData updatedGame) throws DataAccessException;
 
     public void clearGames();
 }

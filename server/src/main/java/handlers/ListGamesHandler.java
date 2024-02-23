@@ -6,7 +6,7 @@ import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import model.GameData;
 import responseException.ResponseException;
-import responseClass.gameResponseClass;
+import responseGames.GameResponseClass;
 import service.ListGamesService;
 import spark.Request;
 import spark.Response;
@@ -25,6 +25,6 @@ public class ListGamesHandler extends Handler {
 
         res.status(200);
         HashSet<GameData> myListedGames = myListGamesService.listGames(authToken);
-        return new Gson().toJson(new gameResponseClass(myListedGames));
+        return new Gson().toJson(new GameResponseClass(myListedGames));
     }
 }

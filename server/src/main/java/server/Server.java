@@ -48,6 +48,8 @@ public class Server {
         LoginHandler myLoginHandler = new LoginHandler(myAuthDAO, myGameDAO, myUserDAO);
         LogoutHandler myLogoutHandler = new LogoutHandler(myAuthDAO, myGameDAO, myUserDAO);
         ListGamesHandler myListGamesHandler = new ListGamesHandler(myAuthDAO, myGameDAO, myUserDAO);
+        CreateGameHandler myCreateGameHandler = new CreateGameHandler(myAuthDAO, myGameDAO, myUserDAO);
+        JoinGameHandler myJoinGameHandler = new JoinGameHandler(myAuthDAO, myGameDAO, myUserDAO);
         ExceptionHandler myExceptionHandler = new ExceptionHandler();
 
         /*Define HTTP endpoints*/
@@ -56,6 +58,8 @@ public class Server {
         Spark.post("/session", myLoginHandler::loginUser);
         Spark.delete("/session", myLogoutHandler::logoutUser);
         Spark.get("/game", myListGamesHandler::listGames);
+        Spark.post("/game", myCreateGameHandler::createGame);
+        Spark.put("/game", myJoinGameHandler::joinGame);
 
         Spark.exception(ResponseException.class, myExceptionHandler::responseExceptionHandler);
         Spark.exception(Exception.class, myExceptionHandler::generalExceptionHandler);
