@@ -16,7 +16,7 @@ public class MemoryGameDAO implements GameDAO {
 
     public int createGame(String gameName) {
         int gameID = randomID.nextInt(10000);
-        gameDataset.add(new GameData(gameID, "", "", gameName, new ChessGame()));
+        gameDataset.add(new GameData(gameID, null, null, gameName, new ChessGame()));
         return gameID;
     }
 

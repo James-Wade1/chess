@@ -12,22 +12,8 @@ public class GameResponseClass {
         this.games = new HashSet<gameList>();
         for (GameData myGame : myGamesList) {
             int gameID = myGame.gameID();
-            String whiteUsername;
-            String blackUsername;
-            if (myGame.whiteUsername() == null) {
-                whiteUsername = "";
-            }
-            else {
-                whiteUsername = myGame.whiteUsername();
-            }
-
-            if (myGame.blackUsername() == null) {
-                blackUsername = "";
-            }
-            else {
-                blackUsername = myGame.blackUsername();
-            }
-
+            String whiteUsername = myGame.whiteUsername();
+            String blackUsername = myGame.blackUsername();
             String gameName = myGame.gameName();
 
             this.games.add(new gameList(gameID, whiteUsername, blackUsername, gameName));

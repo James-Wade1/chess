@@ -22,20 +22,25 @@ public class JoinGameService extends Service {
             throw new ResponseException(400, "Error: bad request");
         }
 
-        if (playerColor.equals("WHITE")) {
-            if (!gameToJoin.whiteUsername().isEmpty()) {
+        if (playerColor == null) {
+
+        }
+        else if (playerColor.equals("WHITE")) {
+            if (gameToJoin.whiteUsername() != null) {
                 throw new ResponseException(403, "Error: already taken");
             }
             GameData updatedGame = new GameData(gameToJoin.gameID(), myAuthDAO.getAuth(authToken).username(), gameToJoin.blackUsername(), gameToJoin.gameName(), gameToJoin.game());
             myGameDAO.updateGame(updatedGame);
         }
-
         else if (playerColor.equals("BLACK")) {
-            if (!gameToJoin.blackUsername().isEmpty()) {
+            if (gameToJoin.blackUsername() != null) {
                 throw new ResponseException(403, "Error: already taken");
             }
             GameData updatedGame = new GameData(gameToJoin.gameID(), gameToJoin.whiteUsername(), myAuthDAO.getAuth(authToken).username(), gameToJoin.gameName(), gameToJoin.game());
             myGameDAO.updateGame(updatedGame);
+        }
+        else {
+            throw new ResponseException(400, "Error: bad request");
         }
     }
 }
