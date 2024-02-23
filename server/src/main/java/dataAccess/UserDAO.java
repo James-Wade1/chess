@@ -8,6 +8,4 @@ public interface UserDAO extends DAO {
     public UserData getUser(String username);
 
     public void clearUsers();
-
-    public int getSize();
 }

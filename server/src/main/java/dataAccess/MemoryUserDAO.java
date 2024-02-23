@@ -30,8 +30,4 @@ public class MemoryUserDAO implements UserDAO {
     public void clearUsers() {
         userDataset = new HashSet<UserData>();
     }
-
-    public int getSize() {
-        return userDataset.size();
-    }
 }

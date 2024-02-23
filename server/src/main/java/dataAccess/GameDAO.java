@@ -17,6 +17,4 @@ public interface GameDAO extends DAO {
     public void updateGame(GameData updatedGame) throws DataAccessException;
 
     public void clearGames();
-
-    public int getSize();
 }

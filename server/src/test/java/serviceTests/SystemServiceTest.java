@@ -44,14 +44,13 @@ class SystemServiceTest extends TestVariables {
     @Test
     void clearData() {
         myUserDAO.createUser(new UserData("username","password","email@gmail.com"));
-        myGameDAO.createGame("NewGame");
-        myAuthDAO.createAuth("username");
+        int gameID = myGameDAO.createGame("NewGame");
+        String authToken = myAuthDAO.createAuth("username").authToken();
 
         mySystemService.clearData();
-        int expectedSize = 0;
 
-        Assertions.assertEquals(expectedSize, myUserDAO.getSize());
-        Assertions.assertEquals(expectedSize, myAuthDAO.getSize());
-        Assertions.assertEquals(expectedSize, myGameDAO.getSize());
+        Assertions.assertNull(myAuthDAO.getAuth(authToken));
+        Assertions.assertNull(myGameDAO.getGame(gameID));
+        Assertions.assertNull(myUserDAO.getUser("username"));
     }
 }

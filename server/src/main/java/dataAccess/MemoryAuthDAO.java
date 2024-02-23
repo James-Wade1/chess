@@ -48,8 +48,4 @@ public class MemoryAuthDAO implements AuthDAO {
     public void clearAuthData() {
         authDataset = new HashSet<AuthData>();
     }
-
-    public int getSize() {
-        return authDataset.size();
-    }
 }
