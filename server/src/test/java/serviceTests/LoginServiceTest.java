@@ -35,7 +35,7 @@ class LoginServiceTest extends TestVariables{
             AuthData newAuthData = myLoginService.loginUser(new UserData("username", "pass", "email@gmail.com"));
             Assertions.assertNotNull(newAuthData);
         } catch (ResponseException ex) {
-            statusCode = ex.StatusCode();
+            statusCode = ex.statusCode();
         }
         Assertions.assertEquals(statusCode, 401, "Status is not 401 unauthorized");
     }

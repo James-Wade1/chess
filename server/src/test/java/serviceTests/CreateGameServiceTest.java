@@ -37,7 +37,7 @@ class CreateGameServiceTest extends TestVariables{
             int gameID1 = myCreateGameService.createGame(authToken, "Game1");
             int gameID2 = myCreateGameService.createGame(authToken, "Game1");
         } catch (ResponseException ex) {
-            statusCode = ex.StatusCode();
+            statusCode = ex.statusCode();
         }
         Assertions.assertEquals(statusCode, 400, "Status code not 400 bad request");
     }

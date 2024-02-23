@@ -10,7 +10,7 @@ public class ExceptionHandler {
 
     public ExceptionHandler() {}
     public void responseExceptionHandler(ResponseException ex, Request req, Response res) {
-        res.status(ex.StatusCode());
+        res.status(ex.statusCode());
         res.body(new Gson().toJson(new ErrorMessage(ex.getMessage())));
     }
 

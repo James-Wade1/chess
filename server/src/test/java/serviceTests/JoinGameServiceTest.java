@@ -38,7 +38,7 @@ class JoinGameServiceTest extends TestVariables {
             myJoinGameService.joinGame(authData.authToken(), "WHITE", gameID);
             myJoinGameService.joinGame(authData.authToken(), "WHITE", gameID);
         } catch(ResponseException ex) {
-            statusCode = ex.StatusCode();
+            statusCode = ex.statusCode();
         }
         Assertions.assertEquals(statusCode, 403, "Status code not 403 already taken");
     }

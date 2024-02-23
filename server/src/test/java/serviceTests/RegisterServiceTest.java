@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import responseException.ResponseException;
 import service.RegisterService;
-import service.SystemService;
 
 class RegisterServiceTest extends TestVariables {
 
@@ -35,7 +34,7 @@ class RegisterServiceTest extends TestVariables {
             myRegisterService.registerUser(newUser);
             Assertions.assertEquals(newUser, myUserDAO.getUser(newUser.username()));
         } catch (ResponseException ex) {
-            statusCode = ex.StatusCode();
+            statusCode = ex.statusCode();
         }
         Assertions.assertEquals(statusCode, 400, "Status code was not 400 bad request");
     }

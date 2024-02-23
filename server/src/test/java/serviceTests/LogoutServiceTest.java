@@ -33,7 +33,7 @@ class LogoutServiceTest extends TestVariables {
         try {
             myLogoutService.logoutUser(authToken.toUpperCase());
         } catch (ResponseException ex) {
-            statusCode = ex.StatusCode();
+            statusCode = ex.statusCode();
         }
         Assertions.assertEquals(statusCode,401, "Status code is not 401 unauthorized");
     }
