@@ -1,3 +1,3 @@
 package responseGames;
 
-public record PlayerJoinRequest(String playerColor, int gameID) {}
+public record playerJoinRequest(String playerColor, int gameID) {}
