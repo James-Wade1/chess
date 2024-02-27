@@ -18,8 +18,9 @@ class LoginServiceTest extends TestVariables{
     @Test
     void loginUserSuccess() {
         UserData user = new UserData("username", "password", "email@gmail.com");
-        myUserDAO.createUser(user);
+
         try {
+            myUserDAO.createUser(user);
             AuthData newAuthData = myLoginService.loginUser(user);
             Assertions.assertNotNull(newAuthData);
         } catch (ResponseException ex) {
@@ -30,8 +31,8 @@ class LoginServiceTest extends TestVariables{
     void loginUserFail() {
         int statusCode = 0;
         UserData user = new UserData("username", "password", "email@gmail.com");
-        myUserDAO.createUser(user);
         try {
+            myUserDAO.createUser(user);
             AuthData newAuthData = myLoginService.loginUser(new UserData("username", "pass", "email@gmail.com"));
             Assertions.assertNotNull(newAuthData);
         } catch (ResponseException ex) {

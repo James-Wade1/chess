@@ -5,6 +5,7 @@ import model.UserData;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import responseException.ResponseException;
 
+import javax.xml.crypto.Data;
 import java.sql.SQLException;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -20,17 +21,35 @@ public class SQLUserDAO implements UserDAO {
         }
     }
 
-    public void createUser(UserData newUser) {
-        String statement = "INSERT INTO pet (username, password, email) VALUES (?, ?, ?)";
-        //var id = executeUpdate(statement, newUser.username(), encryptUserPassword(newUser.password()), newUser.email());
+    public void createUser(UserData newUser) throws ResponseException {
+        String command = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        executeUpdate(command, newUser.username(), encryptUserPassword(newUser.password()), newUser.email());
     }
 
-    public UserData getUser(String username) {
-        return new UserData("","","");
+    public UserData getUser(String username) throws ResponseException {
+        String command = "SELECT username, password, email FROM users WHERE username=? ";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(command)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new UserData(rs.getString("username"), rs.getString("password"), rs.getString("email"));
+                    }
+                }
+            }
+        } catch (DataAccessException | SQLException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+        return null;
     }
 
-    public void clearUsers() {
+    public void clearUsers() throws ResponseException {
+        String command = "TRUNCATE users";
+        executeUpdate(command);
+    }
 
+    public boolean verifyPassword(String databankPassword, String returningUserPassword) {
+        return new BCryptPasswordEncoder().matches(returningUserPassword, databankPassword);
     }
 
     private final String[] createStatements = {
@@ -39,8 +58,9 @@ public class SQLUserDAO implements UserDAO {
               `username` varchar(256) NOT NULL,
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL,
-              INDEX(username)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8_bin
+              INDEX(username),
+              PRIMARY KEY(username)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
             """
     };
 
@@ -60,5 +80,18 @@ public class SQLUserDAO implements UserDAO {
     private String encryptUserPassword(String password) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);
+    }
+
+    private void executeUpdate(String commands, String... params) throws ResponseException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(commands)) {
+                for (int i = 0; i < params.length; i ++) {
+                    ps.setString(i+1, params[i]);
+                }
+                ps.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException(500, String.format("unable to update database: %s, %s", commands, e.getMessage()));
+        }
     }
 }

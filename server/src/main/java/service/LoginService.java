@@ -5,6 +5,7 @@ import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import responseException.ResponseException;
 
 public class LoginService extends Service {
@@ -22,7 +23,7 @@ public class LoginService extends Service {
         if (databankUser == null) {
             throw new ResponseException(401, "Error: Unauthorized");
         }
-        if (databankUser.password().equals(returningUser.password())) {
+        if (myUserDAO.verifyPassword(databankUser.password(), returningUser.password())) {
             return myAuthDAO.createAuth(returningUser.username());
         }
         else {

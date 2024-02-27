@@ -21,7 +21,8 @@ public class Server {
         UserDAO myUserDAO = null;
         GameDAO myGameDAO = null;
 
-        HashSet<DAO> myDAOs = SystemService.instantiateDAOs();
+        try {
+            HashSet<DAO> myDAOs = SystemService.instantiateDAOs();
 
         for (DAO myDAO : myDAOs) {
             if (myDAO instanceof AuthDAO) {
@@ -36,6 +37,10 @@ public class Server {
             else {
                 throw new RuntimeException("Extra DAO not in use");
             }
+        }
+
+        } catch(ResponseException ex) {
+            throw new RuntimeException(ex.getMessage());
         }
 
         if (myAuthDAO == null || myGameDAO == null || myUserDAO == null) {

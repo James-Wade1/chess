@@ -1,6 +1,7 @@
 package service;
 
 import dataAccess.*;
+import responseException.ResponseException;
 
 import java.util.HashSet;
 
@@ -10,21 +11,21 @@ public class SystemService extends Service {
         super(authDAO, gameDAO, userDAO);
     }
 
-    public static HashSet<DAO> instantiateDAOs() {
+    public static HashSet<DAO> instantiateDAOs() throws ResponseException {
         HashSet<DAO> myDAOHashset = new HashSet<DAO>();
         myDAOHashset.add(new MemoryAuthDAO());
         myDAOHashset.add(new MemoryGameDAO());
-        myDAOHashset.add(new MemoryUserDAO());
+        myDAOHashset.add(new SQLUserDAO());
 
         return myDAOHashset;
     }
-    public void clearData() {
+    public void clearData() throws ResponseException {
         clearUsers();
         clearGames();
         clearAuthTokens();
     }
 
-    private void clearUsers() {
+    private void clearUsers() throws ResponseException {
         myUserDAO.clearUsers();
     }
 

@@ -3,6 +3,7 @@ package handlers;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
 import dataAccess.UserDAO;
+import responseException.ResponseException;
 import spark.Request;
 import spark.Response;
 
@@ -17,7 +18,7 @@ public class SystemHandler extends Handler {
         this.mySystemService = new SystemService(myAuthDAO, myGameDAO, myUserDAO);
     };
 
-    public Object clearData(Request req, Response res) {
+    public Object clearData(Request req, Response res) throws ResponseException {
         mySystemService.clearData();
         res.status(200);
         return "{}";

@@ -6,6 +6,7 @@ import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import model.GameData;
 import responseException.ResponseException;
+import responseGames.GameIDResponse;
 import service.CreateGameService;
 import spark.Request;
 import spark.Response;
@@ -24,6 +25,7 @@ public class CreateGameHandler extends Handler {
 
         res.status(200);
         int gameID = myCreateGameService.createGame(authToken, gameName);
-        return String.format("{\"gameID\": \"%d\"}", gameID);
+        return new Gson().toJson(new GameIDResponse(gameID));
+        //return String.format("{\"gameID\": \"%d\"}", gameID);
     }
 }

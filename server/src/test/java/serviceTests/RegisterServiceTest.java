@@ -19,7 +19,8 @@ class RegisterServiceTest extends TestVariables {
         UserData newUser = new UserData("username", "password","email");
         try {
             myRegisterService.registerUser(newUser);
-            Assertions.assertEquals(newUser, myUserDAO.getUser(newUser.username()));
+            Assertions.assertEquals(newUser.username(), myUserDAO.getUser(newUser.username()).username());
+            Assertions.assertEquals(newUser.email(), myUserDAO.getUser(newUser.username()).email());
         } catch (ResponseException ex) {
             Assertions.assertEquals(1, 0);
         }
