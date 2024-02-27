@@ -1,5 +1,6 @@
 package serviceTests;
 
+import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,21 +17,23 @@ class LogoutServiceTest extends TestVariables {
 
     @Test
     void logoutUserSuccess() {
-        String authToken = myAuthDAO.createAuth("username").authToken();
         try {
+        myUserDAO.createUser(new UserData("username","password","email@email.com"));
+        String authToken = myAuthDAO.createAuth("username").authToken();
             myLogoutService.logoutUser(authToken);
-        } catch (ResponseException ex) {
-            Assertions.assertEquals(ex.getMessage(),"");
-        }
 
-        Assertions.assertNull(myAuthDAO.getAuth(authToken));
+            Assertions.assertNull(myAuthDAO.getAuth(authToken));
+        } catch (Exception ex) {
+            Assertions.fail("Expected no error but got: " + ex);
+        }
     }
 
     @Test
     void logoutUserFail() {
         int statusCode = 0;
-        String authToken = myAuthDAO.createAuth("username").authToken();
         try {
+            myUserDAO.createUser(new UserData("username","password","email@email.com"));
+            String authToken = myAuthDAO.createAuth("username").authToken();
             myLogoutService.logoutUser(authToken.toUpperCase());
         } catch (ResponseException ex) {
             statusCode = ex.statusCode();

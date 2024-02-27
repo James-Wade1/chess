@@ -13,21 +13,21 @@ import static java.sql.Types.NULL;
 
 public class SQLUserDAO implements UserDAO {
 
-    public SQLUserDAO() throws ResponseException {
+    public SQLUserDAO() {
         try {
             this.configureDatabase();
-        } catch(DataAccessException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
+        } catch(DataAccessException | ResponseException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     public void createUser(UserData newUser) throws ResponseException {
-        String command = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        String command = "INSERT INTO userDatabase (username, password, email) VALUES (?, ?, ?)";
         executeUpdate(command, newUser.username(), encryptUserPassword(newUser.password()), newUser.email());
     }
 
     public UserData getUser(String username) throws ResponseException {
-        String command = "SELECT username, password, email FROM users WHERE username=? ";
+        String command = "SELECT username, password, email FROM userDatabase WHERE username=? ";
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(command)) {
                 ps.setString(1, username);
@@ -44,7 +44,7 @@ public class SQLUserDAO implements UserDAO {
     }
 
     public void clearUsers() throws ResponseException {
-        String command = "TRUNCATE users";
+        String command = "DELETE FROM userDatabase";
         executeUpdate(command);
     }
 
@@ -54,7 +54,7 @@ public class SQLUserDAO implements UserDAO {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  users (
+            CREATE TABLE IF NOT EXISTS  userDatabase (
               `username` varchar(256) NOT NULL,
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL,
@@ -82,7 +82,7 @@ public class SQLUserDAO implements UserDAO {
         return encoder.encode(password);
     }
 
-    private void executeUpdate(String commands, String... params) throws ResponseException {
+    private void executeUpdate(String commands, String... params) {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(commands)) {
                 for (int i = 0; i < params.length; i ++) {
@@ -91,7 +91,7 @@ public class SQLUserDAO implements UserDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500, String.format("unable to update database: %s, %s", commands, e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 }

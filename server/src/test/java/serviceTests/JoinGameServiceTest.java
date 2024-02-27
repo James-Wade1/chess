@@ -2,6 +2,7 @@ package serviceTests;
 
 import model.AuthData;
 import model.GameData;
+import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +18,10 @@ class JoinGameServiceTest extends TestVariables {
     @Test
     void joinGameSuccess() {
         int gameID = myGameDAO.createGame("Game1");
-        AuthData authData = myAuthDAO.createAuth("username");
-
         try {
+            myUserDAO.createUser(new UserData("username","password","email@email.com"));
+            AuthData authData = myAuthDAO.createAuth("username");
+
             myJoinGameService.joinGame(authData.authToken(), "WHITE", gameID);
             GameData updatedGame = myGameDAO.getGame(gameID);
             Assertions.assertEquals("username", updatedGame.whiteUsername());
@@ -31,10 +33,11 @@ class JoinGameServiceTest extends TestVariables {
     @Test
     void joinGameFail() {
         int gameID = myGameDAO.createGame("Game1");
-        AuthData authData = myAuthDAO.createAuth("username");
         int statusCode = 0;
-
         try {
+            myUserDAO.createUser(new UserData("username","password","email@email.com"));
+            AuthData authData = myAuthDAO.createAuth("username");
+
             myJoinGameService.joinGame(authData.authToken(), "WHITE", gameID);
             myJoinGameService.joinGame(authData.authToken(), "WHITE", gameID);
         } catch(ResponseException ex) {

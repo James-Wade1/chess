@@ -11,18 +11,18 @@ public class SystemService extends Service {
         super(authDAO, gameDAO, userDAO);
     }
 
-    public static HashSet<DAO> instantiateDAOs() throws ResponseException {
+    public static HashSet<DAO> instantiateDAOs() {
         HashSet<DAO> myDAOHashset = new HashSet<DAO>();
-        myDAOHashset.add(new MemoryAuthDAO());
-        myDAOHashset.add(new MemoryGameDAO());
         myDAOHashset.add(new SQLUserDAO());
+        myDAOHashset.add(new SQLAuthDAO());
+        myDAOHashset.add(new MemoryGameDAO());
 
         return myDAOHashset;
     }
     public void clearData() throws ResponseException {
+        clearAuthTokens();
         clearUsers();
         clearGames();
-        clearAuthTokens();
     }
 
     private void clearUsers() throws ResponseException {

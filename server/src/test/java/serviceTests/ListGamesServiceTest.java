@@ -3,6 +3,7 @@ package serviceTests;
 import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
+import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,12 +22,12 @@ class ListGamesServiceTest extends TestVariables {
     void listGamesSuccess() {
         int gameID1 = myGameDAO.createGame("Game 1");
         int gameID2 = myGameDAO.createGame("Game 2");
-        AuthData authData = myAuthDAO.createAuth("username");
-        HashSet<GameData> expected = new HashSet<GameData>();
-        expected.add(myGameDAO.getGame(gameID1));
-        expected.add(myGameDAO.getGame(gameID2));
-
         try {
+            myUserDAO.createUser(new UserData("username","password","email@email.com"));
+            AuthData authData = myAuthDAO.createAuth("username");
+            HashSet<GameData> expected = new HashSet<GameData>();
+            expected.add(myGameDAO.getGame(gameID1));
+            expected.add(myGameDAO.getGame(gameID2));
             Assertions.assertEquals(expected,myListGamesService.listGames(authData.authToken()));
 
         } catch (ResponseException ex) {
@@ -38,11 +39,12 @@ class ListGamesServiceTest extends TestVariables {
     void listGamesFail() {
         int gameID1 = myGameDAO.createGame("Game 1");
         int gameID2 = myGameDAO.createGame("Game 2");
-        AuthData authData = myAuthDAO.createAuth("username");
-        HashSet<GameData> expected = new HashSet<GameData>();
-        expected.add(myGameDAO.getGame(gameID1));
-
         try {
+            myUserDAO.createUser(new UserData("username","password","email@email.com"));
+            AuthData authData = myAuthDAO.createAuth("username");
+            HashSet<GameData> expected = new HashSet<GameData>();
+            expected.add(myGameDAO.getGame(gameID1));
+
             Assertions.assertNotEquals(expected,myListGamesService.listGames(authData.authToken()));
 
         } catch (ResponseException ex) {
