@@ -3,6 +3,7 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 
 import static chess.ChessPiece.PieceType.PAWN;
 
@@ -41,6 +42,19 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessGame chessGame = (ChessGame) o;
+        return previousMoveDoublePawn == chessGame.previousMoveDoublePawn && teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board) && Objects.equals(previousMoveDoublePawnLocation, chessGame.previousMoveDoublePawnLocation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teamTurn, board, previousMoveDoublePawn, previousMoveDoublePawnLocation);
     }
 
     /**
