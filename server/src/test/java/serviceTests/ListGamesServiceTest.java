@@ -20,9 +20,9 @@ class ListGamesServiceTest extends TestVariables {
     }
     @Test
     void listGamesSuccess() {
-        int gameID1 = myGameDAO.createGame("Game 1");
-        int gameID2 = myGameDAO.createGame("Game 2");
         try {
+            int gameID1 = myGameDAO.createGame("Game 1");
+            int gameID2 = myGameDAO.createGame("Game 2");
             myUserDAO.createUser(new UserData("username","password","email@email.com"));
             AuthData authData = myAuthDAO.createAuth("username");
             HashSet<GameData> expected = new HashSet<GameData>();
@@ -37,9 +37,9 @@ class ListGamesServiceTest extends TestVariables {
 
     @Test
     void listGamesFail() {
-        int gameID1 = myGameDAO.createGame("Game 1");
-        int gameID2 = myGameDAO.createGame("Game 2");
         try {
+            int gameID1 = myGameDAO.createGame("Game 1");
+            int gameID2 = myGameDAO.createGame("Game 2");
             myUserDAO.createUser(new UserData("username","password","email@email.com"));
             AuthData authData = myAuthDAO.createAuth("username");
             HashSet<GameData> expected = new HashSet<GameData>();

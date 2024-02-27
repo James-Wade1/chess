@@ -15,25 +15,25 @@ public class SystemService extends Service {
         HashSet<DAO> myDAOHashset = new HashSet<DAO>();
         myDAOHashset.add(new SQLUserDAO());
         myDAOHashset.add(new SQLAuthDAO());
-        myDAOHashset.add(new MemoryGameDAO());
+        myDAOHashset.add(new SQLGameDAO());
 
         return myDAOHashset;
     }
     public void clearData() throws ResponseException {
         clearAuthTokens();
-        clearUsers();
         clearGames();
+        clearUsers();
     }
 
     private void clearUsers() throws ResponseException {
         myUserDAO.clearUsers();
     }
 
-    private void clearGames() {
+    private void clearGames() throws ResponseException {
         myGameDAO.clearGames();
     }
 
-    private void clearAuthTokens() {
+    private void clearAuthTokens() throws ResponseException {
         myAuthDAO.clearAuthData();
     }
 }

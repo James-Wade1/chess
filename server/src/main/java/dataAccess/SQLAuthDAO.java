@@ -18,7 +18,7 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-    public AuthData createAuth(String username) {
+    public AuthData createAuth(String username) throws ResponseException {
         String authToken = UUID.randomUUID().toString();
         AuthData newAuth = new AuthData(authToken, username);
         String commands = "INSERT INTO authDatabase (authToken, username) VALUES (?, ?)";
@@ -56,7 +56,7 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-    public void clearAuthData() {
+    public void clearAuthData() throws ResponseException {
         String command = "DELETE FROM authDatabase";
         executeUpdate(command);
     }
@@ -86,7 +86,7 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-    private void executeUpdate(String commands, String... params) {
+    private void executeUpdate(String commands, String... params) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(commands)) {
                 for (int i = 0; i < params.length; i++) {
@@ -95,7 +95,7 @@ public class SQLAuthDAO implements AuthDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new ResponseException(500, e.getMessage());
         }
     }
 }

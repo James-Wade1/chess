@@ -17,8 +17,8 @@ class JoinGameServiceTest extends TestVariables {
     }
     @Test
     void joinGameSuccess() {
-        int gameID = myGameDAO.createGame("Game1");
         try {
+            int gameID = myGameDAO.createGame("Game1");
             myUserDAO.createUser(new UserData("username","password","email@email.com"));
             AuthData authData = myAuthDAO.createAuth("username");
 
@@ -32,9 +32,9 @@ class JoinGameServiceTest extends TestVariables {
 
     @Test
     void joinGameFail() {
-        int gameID = myGameDAO.createGame("Game1");
         int statusCode = 0;
         try {
+            int gameID = myGameDAO.createGame("Game1");
             myUserDAO.createUser(new UserData("username","password","email@email.com"));
             AuthData authData = myAuthDAO.createAuth("username");
 

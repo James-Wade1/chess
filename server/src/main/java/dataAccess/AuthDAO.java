@@ -7,11 +7,11 @@ import java.util.HashSet;
 
 public interface AuthDAO extends DAO {
 
-    public AuthData createAuth(String username);
+    public AuthData createAuth(String username) throws ResponseException;
 
     public AuthData getAuth(String authToken) throws ResponseException;
 
     public void deleteAuth(String authToken) throws DataAccessException;
 
-    public void clearAuthData();
+    public void clearAuthData() throws ResponseException;
 }
