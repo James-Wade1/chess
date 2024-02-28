@@ -14,12 +14,8 @@ public class MemoryUserDAO implements UserDAO {
     public MemoryUserDAO() {}
 
     /** Creates new user assuming that one is not already in the hashset*/
-    public void createUser(UserData newUser) throws ResponseException {
-        try {
-            userDataset.add(newUser);
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
+    public void createUser(UserData newUser) {
+        userDataset.add(newUser);
     }
 
     /** Checks if there is a user already with that username. If so, return that userData. If not, return null*/
@@ -36,7 +32,7 @@ public class MemoryUserDAO implements UserDAO {
         }
     }
 
-    public void clearUsers() throws ResponseException {
+    public void clearUsers() {
         userDataset = new HashSet<UserData>();
     }
 
