@@ -2,6 +2,7 @@ package daoTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.SQLAuthDAO;
+import dataAccess.SQLGameDAO;
 import dataAccess.SQLUserDAO;
 import model.AuthData;
 import model.UserData;
@@ -10,21 +11,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import responseException.ResponseException;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class SQLAuthDAOTest {
 
-    SQLAuthDAO myAuthDao;
-    SQLUserDAO myUserDao;
+    SQLAuthDAO myAuthDAO;
+    SQLUserDAO myUserDAO;
+    SQLGameDAO myGameDAO;
     @BeforeEach
     void setUp() {
         try {
-            myAuthDao = new SQLAuthDAO();
-            myUserDao = new SQLUserDAO();
-            myAuthDao.clearAuthData();
-            myUserDao.clearUsers();
+            myAuthDAO = new SQLAuthDAO();
+            myUserDAO = new SQLUserDAO();
+            myGameDAO = new SQLGameDAO();
+            myAuthDAO.clearAuthData();
+            myGameDAO.clearGames();
+            myUserDAO.clearUsers();
 
-            myUserDao.createUser(new UserData("username", "password", "email@email.com"));
+            myUserDAO.createUser(new UserData("username1", "password1", "email1@email.com"));
         } catch (ResponseException ex) {
             Assertions.fail("Expected no error but got " + ex);
         }
@@ -33,8 +35,8 @@ class SQLAuthDAOTest {
     @Test
     void createAuthSuccess() {
         try {
-            AuthData expected = myAuthDao.createAuth("username");
-            AuthData actual = myAuthDao.getAuth(expected.authToken());
+            AuthData expected = myAuthDAO.createAuth("username1");
+            AuthData actual = myAuthDAO.getAuth(expected.authToken());
 
             Assertions.assertEquals(expected, actual);
         } catch (ResponseException ex) {
@@ -45,20 +47,20 @@ class SQLAuthDAOTest {
     @Test
     void createAuthFail() {
         try {
-            AuthData expected = myAuthDao.createAuth("username");
-            AuthData actual = myAuthDao.getAuth(expected.authToken().toUpperCase());
+            AuthData expected = myAuthDAO.createAuth("username1");
+            AuthData actual = myAuthDAO.getAuth(expected.authToken().toUpperCase());
 
             Assertions.assertNotEquals(expected, actual);
         } catch (ResponseException ex) {
-        Assertions.fail("Expected no error but got " + ex);
-    }
+            Assertions.fail("Expected no error but got " + ex);
+        }
     }
 
     @Test
     void getAuthSuccess() {
         try {
-            AuthData expected = myAuthDao.createAuth("username");
-            AuthData actual = myAuthDao.getAuth(expected.authToken());
+            AuthData expected = myAuthDAO.createAuth("username1");
+            AuthData actual = myAuthDAO.getAuth(expected.authToken());
 
             Assertions.assertEquals(expected, actual);
         } catch (ResponseException ex) {
@@ -69,8 +71,8 @@ class SQLAuthDAOTest {
     @Test
     void getAuthFail() {
         try {
-        AuthData expected = myAuthDao.createAuth("username");
-        Assertions.assertNull(myAuthDao.getAuth(expected.authToken().toUpperCase()));
+            AuthData expected = myAuthDAO.createAuth("username1");
+            Assertions.assertNull(myAuthDAO.getAuth(expected.authToken().toUpperCase()));
         } catch (ResponseException ex) {
             Assertions.fail("Expected no error but got " + ex);
         }
@@ -79,11 +81,14 @@ class SQLAuthDAOTest {
     @Test
     void deleteAuthSuccess() {
         try {
-            AuthData auth1 = myAuthDao.createAuth("username1");
-            AuthData auth2 = myAuthDao.createAuth("username2");
-            myAuthDao.deleteAuth(auth1.authToken());
-            Assertions.assertNull(myAuthDao.getAuth(auth1.authToken()));
-            Assertions.assertNotNull(myAuthDao.getAuth(auth2.authToken()));
+            AuthData auth1 = myAuthDAO.createAuth("username1");
+
+            myUserDAO.createUser(new UserData("username2", "password2", "email2@email.com"));
+            AuthData auth2 = myAuthDAO.createAuth("username2");
+
+            myAuthDAO.deleteAuth(auth1.authToken());
+            Assertions.assertNull(myAuthDAO.getAuth(auth1.authToken()));
+            Assertions.assertNotNull(myAuthDAO.getAuth(auth2.authToken()));
         } catch (DataAccessException | ResponseException e) {
             Assertions.fail("No error expected but got: " + e);
         }
@@ -92,9 +97,9 @@ class SQLAuthDAOTest {
     @Test
     void deleteAuthFail() {
         try {
-            AuthData auth1 = myAuthDao.createAuth("username1");
+            AuthData auth1 = myAuthDAO.createAuth("username1");
             Assertions.assertThrows(DataAccessException.class, () -> {
-                myAuthDao.deleteAuth(auth1.authToken().toUpperCase());
+                myAuthDAO.deleteAuth(auth1.authToken().toUpperCase());
             });
         } catch (ResponseException ex) {
             Assertions.fail("Expected no error but got " + ex);
@@ -104,14 +109,18 @@ class SQLAuthDAOTest {
     @Test
     void clearAuthDataSuccess() {
         try {
-            AuthData auth1 = myAuthDao.createAuth("username1");
-            AuthData auth2 = myAuthDao.createAuth("username2");
-            AuthData auth3 = myAuthDao.createAuth("username3");
-            myAuthDao.clearAuthData();
+            AuthData auth1 = myAuthDAO.createAuth("username1");
 
-            Assertions.assertNull(myAuthDao.getAuth(auth1.authToken()));
-            Assertions.assertNull(myAuthDao.getAuth(auth2.authToken()));
-            Assertions.assertNull(myAuthDao.getAuth(auth3.authToken()));
+            myUserDAO.createUser(new UserData("username2", "password2", "email2@email.com"));
+            AuthData auth2 = myAuthDAO.createAuth("username2");
+
+            myUserDAO.createUser(new UserData("username3", "password3", "email3@email.com"));
+            AuthData auth3 = myAuthDAO.createAuth("username3");
+            myAuthDAO.clearAuthData();
+
+            Assertions.assertNull(myAuthDAO.getAuth(auth1.authToken()));
+            Assertions.assertNull(myAuthDAO.getAuth(auth2.authToken()));
+            Assertions.assertNull(myAuthDAO.getAuth(auth3.authToken()));
         } catch (ResponseException ex) {
             Assertions.fail("Expected no error but got " + ex);
         }
