@@ -38,7 +38,23 @@ class MemoryGameDAOTest {
     }
 
     @Test
-    void getGameSuccess() {
+    void getGameByNameSuccess() {
+        String gameName = "game1";
+        int gameID1 = myGameDAO.createGame(gameName);
+        GameData expected = new GameData(gameID1, null, null, gameName, new ChessGame());
+        Assertions.assertEquals(expected, myGameDAO.getGame(gameName));
+    }
+
+    @Test
+    void getGameByNameFail() {
+        String gameName = "game1";
+        int gameID1 = myGameDAO.createGame(gameName);
+        GameData expected = new GameData(gameID1, null, null, gameName, new ChessGame());
+        Assertions.assertNull(myGameDAO.getGame(gameName.toUpperCase()));
+    }
+
+    @Test
+    void getGameByIDSuccess() {
         String gameName = "game1";
         int gameID1 = myGameDAO.createGame(gameName);
         GameData expected = new GameData(gameID1, null, null, gameName, new ChessGame());
@@ -47,7 +63,7 @@ class MemoryGameDAOTest {
     }
 
     @Test
-    void getGameFail() {
+    void getGameByIDFail() {
         String gameName = "game1";
         int gameID1 = myGameDAO.createGame(gameName);
         GameData expected = new GameData(gameID1, null, null, gameName, new ChessGame());
