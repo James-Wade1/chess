@@ -1,4 +1,4 @@
-package daoTests;
+package dataAccessTests;
 
 import chess.ChessBoard;
 import chess.ChessGame;
@@ -15,8 +15,6 @@ import responseException.ResponseException;
 
 import java.util.HashSet;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SQLGameDAOTest {
     SQLAuthDAO myAuthDAO;

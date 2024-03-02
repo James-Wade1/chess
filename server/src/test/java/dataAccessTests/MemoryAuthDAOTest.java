@@ -1,4 +1,4 @@
-package daoTests;
+package dataAccessTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
@@ -6,8 +6,6 @@ import model.AuthData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class MemoryAuthDAOTest {
 

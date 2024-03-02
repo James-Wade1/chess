@@ -1,4 +1,4 @@
-package daoTests;
+package dataAccessTests;
 
 import dataAccess.MemoryUserDAO;
 import model.UserData;
@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import responseException.ResponseException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class MemoryUserDAOTest {
 

@@ -1,4 +1,4 @@
-package daoTests;
+package dataAccessTests;
 
 import dataAccess.SQLAuthDAO;
 import dataAccess.SQLGameDAO;
@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import responseException.ResponseException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SQLUserDAOTest {
 
