@@ -1,3 +1,5 @@
+import ui.UIException;
+
 public class ChessClient {
 
     private String serverURL;
@@ -13,13 +15,20 @@ public class ChessClient {
     }
 
     public String eval(String userInput) {
-        var tokens = userInput.split(" ");
-        String cmd = (tokens.length > 0) ? tokens[0] : "help";
-        return switch(cmd) {
-            case "Quit" -> "Quit";
-            case "Help" -> help();
-            default -> "Unknown command. Please try again";
-        };
+        try {
+            var tokens = userInput.split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            return switch (cmd) {
+                case "Quit" -> "Quit";
+                case "Help" -> help();
+                case "Login" -> login();
+                case "Register" -> register();
+                case "Logout" -> logout();
+                default -> "Unknown command. Please try again";
+            };
+        } catch (UIException ex) {
+            return ex.getMessage();
+        }
     }
 
     public String help() {
@@ -48,6 +57,21 @@ public class ChessClient {
                     """;
         }
         return helpOutput;
+    }
+
+    private String login() {
+        return "";
+    }
+
+    private String register() {
+        return "";
+    }
+
+    private String logout() throws UIException {
+        if (state == UserState.LOGGEDOUT) {
+            throw new UIException("Need to be logged in first");
+        }
+        return "";
     }
 
     public String getUserState() {
