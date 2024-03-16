@@ -1,5 +1,5 @@
 public enum UserState {
-    SIGNEDIN,
-    SIGNEDOUT,
+    LOGGEDIN,
+    LOGGEDOUT,
     GAMEPLAY
 }
