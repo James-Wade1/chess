@@ -115,7 +115,7 @@ public class SQLGameDAO implements GameDAO {
               `whiteUsername` varchar(256) DEFAULT NULL,
               `blackUsername` varchar(256) DEFAULT NULL,
               `gameName` varchar(256) NOT NULL,
-              `game` LONGTEXT NOT NULL,
+              `game` JSON NOT NULL,
               INDEX(gameID),
               PRIMARY KEY(gameID),
               FOREIGN KEY(whiteUsername) REFERENCES userDatabase(username),
@@ -140,6 +140,7 @@ public class SQLGameDAO implements GameDAO {
     private void executeUpdate(String commands, Object... params) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(commands)) {
+                conn.setAutoCommit(false);
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
                     if (param == null) ps.setNull(i+1, Types.NULL);
@@ -147,6 +148,13 @@ public class SQLGameDAO implements GameDAO {
                     else if (param instanceof String p) ps.setString(i+1, p);
                 }
                 ps.executeUpdate();
+                conn.commit();
+            } catch (SQLException e) {
+                if (conn != null && !conn.isClosed()) {
+                    conn.rollback();
+                    conn.setAutoCommit(true);
+                    throw e;
+                }
             }
         } catch (DataAccessException | SQLException e) {
             throw new ResponseException(500,e.getMessage());
