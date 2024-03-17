@@ -1,4 +1,5 @@
 import model.AuthData;
+import model.UserData;
 import responseException.ResponseException;
 import ui.UIException;
 
@@ -13,7 +14,7 @@ public class ChessClient {
 
     private UserState state;
 
-    private AuthData authTokens = null;
+    private AuthData authToken = null;
 
     public ChessClient(String serverURL) {
         this.serverURL = serverURL;
@@ -75,7 +76,8 @@ public class ChessClient {
 
     private String register(String... params) throws UIException, ResponseException {
         if (params.length == 3) {
-            server.register(params);
+            UserData newUser = new UserData(params[0], params[1], params[2]);
+            server.register(newUser);
             return String.format("Registered user %s", params[0]);
         }
         throw new UIException("Expected: Register <username> <password> <email>");
