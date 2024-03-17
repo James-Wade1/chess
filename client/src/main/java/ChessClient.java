@@ -1,4 +1,9 @@
+import model.AuthData;
+import responseException.ResponseException;
 import ui.UIException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ChessClient {
 
@@ -8,26 +13,31 @@ public class ChessClient {
 
     private UserState state;
 
+    private AuthData authTokens = null;
+
     public ChessClient(String serverURL) {
         this.serverURL = serverURL;
         this.state = UserState.LOGGEDOUT;
-        server = new ServerFacade(serverURL);
+        server = new ServerFacade(this.serverURL);
     }
 
     public String eval(String userInput) {
         try {
             var tokens = userInput.split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "Quit" -> "Quit";
                 case "Help" -> help();
                 case "Login" -> login();
-                case "Register" -> register();
+                case "Register" -> register(params);
                 case "Logout" -> logout();
                 default -> "Unknown command. Please try again";
             };
         } catch (UIException ex) {
             return ex.getMessage();
+        } catch (ResponseException ex) {
+            return String.format("Failure: %d", ex.statusCode());
         }
     }
 
@@ -37,8 +47,8 @@ public class ChessClient {
             helpOutput = """
                     - Help
                     - Quit
-                    - Login
-                    - Register
+                    - Login <username> <password>
+                    - Register <username> <password> <email>
                     """;
         }
         else if (state == UserState.LOGGEDIN) {
@@ -63,8 +73,12 @@ public class ChessClient {
         return "";
     }
 
-    private String register() {
-        return "";
+    private String register(String... params) throws UIException, ResponseException {
+        if (params.length == 3) {
+            server.register(params);
+            return String.format("Registered user %s", params[0]);
+        }
+        throw new UIException("Expected: Register <username> <password> <email>");
     }
 
     private String logout() throws UIException {
