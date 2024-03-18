@@ -6,7 +6,7 @@ import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import model.GameData;
 import responseException.ResponseException;
-import responseGames.GameIDResponse;
+import model.GameIDResponse;
 import service.CreateGameService;
 import spark.Request;
 import spark.Response;

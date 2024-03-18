@@ -6,7 +6,7 @@ import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import responseException.ResponseException;
-import responseGames.PlayerJoinRequest;
+import model.PlayerJoinRequest;
 import service.JoinGameService;
 import spark.Request;
 import spark.Response;

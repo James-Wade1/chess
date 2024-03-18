@@ -1,4 +1,4 @@
-package responseGames;
+package model;
 
 import model.GameData;
 

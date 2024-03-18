@@ -1,7 +1,7 @@
 import ServerFacade.ServerFacade;
 import model.GameData;
 import responseException.ResponseException;
-import responseGames.PlayerJoinRequest;
+import model.PlayerJoinRequest;
 import ui.UIException;
 
 import java.util.Arrays;

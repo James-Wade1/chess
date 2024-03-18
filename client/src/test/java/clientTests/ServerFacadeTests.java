@@ -5,8 +5,8 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import responseException.ResponseException;
-import responseGames.GameResponseClass;
-import responseGames.PlayerJoinRequest;
+import model.GameResponseClass;
+import model.PlayerJoinRequest;
 import server.Server;
 
 import java.util.HashSet;

@@ -5,9 +5,9 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import responseException.ResponseException;
-import responseGames.GameIDResponse;
-import responseGames.GameResponseClass;
-import responseGames.PlayerJoinRequest;
+import model.GameIDResponse;
+import model.GameResponseClass;
+import model.PlayerJoinRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
