@@ -16,20 +16,37 @@ public class ChessClient {
 
     private LoggedOutClient loggedOutClient;
 
+    private LoggedInClient loggedInClient;
+
     public ChessClient(String serverURL) {
         this.serverURL = serverURL;
         this.state = UserState.LOGGEDOUT;
         this.server = new ServerFacade(this.serverURL);
         this.loggedOutClient = new LoggedOutClient(this.server);
+        this.loggedInClient = new LoggedInClient(this.server);
     }
 
     public String eval(String userInput) {
         try {
+            var tokens = userInput.split(" ");
+            String output = "";
             if (state == UserState.LOGGEDOUT) {
-                return loggedOutClient.eval(userInput, state);
+                output = loggedOutClient.eval(userInput);
+                if (tokens[0].equals("Login")) {
+                    state = UserState.LOGGEDIN;
+                }
+                return output;
             }
             else if (state == UserState.LOGGEDIN) {
-                return "";
+                output = loggedInClient.eval(userInput);
+
+                if (tokens[0].equals("Logout")) {
+                    state = UserState.LOGGEDOUT;
+                }
+                else if (tokens[0].equals("Delete")) {
+                    state = UserState.LOGGEDOUT;
+                }
+                return output;
             }
             else if (state == UserState.GAMEPLAY) {
                 return "";

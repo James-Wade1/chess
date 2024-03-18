@@ -30,6 +30,11 @@ public class ServerFacade {
         authToken = this.makeRequest("POST", path, returningUser, AuthData.class, false);
     }
 
+    public void logout() throws ResponseException {
+        String path = "/session";
+        this.makeRequest("DELETE", path, null, null, true);
+    }
+
     public void delete() throws ResponseException {
         String path = "/db";
         this.makeRequest("DELETE", path, null, null, false);
