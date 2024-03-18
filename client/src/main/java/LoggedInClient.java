@@ -1,6 +1,6 @@
+import ServerFacade.ServerFacade;
 import model.GameData;
 import responseException.ResponseException;
-import responseGames.GameResponseClass;
 import responseGames.PlayerJoinRequest;
 import ui.UIException;
 

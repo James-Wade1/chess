@@ -1,10 +1,7 @@
-import model.AuthData;
-import model.UserData;
+import ServerFacade.ServerFacade;
+import UserStates.UserState;
 import responseException.ResponseException;
 import ui.UIException;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ChessClient {
 
@@ -47,7 +44,7 @@ public class ChessClient {
                     state = UserState.LOGGEDOUT;
                 }
                 else if (tokens[0].equals("JoinGame") || tokens[0].equals("JoinObserver")) {
-                    //state = UserState.GAMEPLAY;
+                    //state = UserStates.UserState.GAMEPLAY;
                     return gameplayClient.printBoard();
                 }
                 else if (tokens[0].equals("Delete")) {
