@@ -38,4 +38,6 @@ public class GameResponseClass {
 
         return output.toString();
     }
+
+    public HashSet<GameList> getGames() { return games; }
 }
