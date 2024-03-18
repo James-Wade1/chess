@@ -18,12 +18,15 @@ public class ChessClient {
 
     private LoggedInClient loggedInClient;
 
+    private GameplayClient gameplayClient;
+
     public ChessClient(String serverURL) {
         this.serverURL = serverURL;
         this.state = UserState.LOGGEDOUT;
         this.server = new ServerFacade(this.serverURL);
         this.loggedOutClient = new LoggedOutClient(this.server);
         this.loggedInClient = new LoggedInClient(this.server);
+        this.gameplayClient = new GameplayClient(this.server);
     }
 
     public String eval(String userInput) {
@@ -52,6 +55,7 @@ public class ChessClient {
                 return output;
             }
             else if (state == UserState.GAMEPLAY) {
+                //return gameplayClient.run();
                 return "";
             }
             else {
