@@ -1,7 +1,10 @@
 import com.google.gson.Gson;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import responseException.ResponseException;
+import responseGames.GameIDResponse;
+import responseGames.GameResponseClass;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,19 +23,29 @@ public class ServerFacade {
         this.serverURL = serverURL;
     }
 
-    public void register(UserData newUser) throws ResponseException {
+    public void registerUser(UserData newUser) throws ResponseException {
         String path = "/user";
         this.makeRequest("POST", path, newUser, null, false);
     }
 
-    public void login(UserData returningUser) throws ResponseException {
+    public void loginUser(UserData returningUser) throws ResponseException {
         String path = "/session";
         authToken = this.makeRequest("POST", path, returningUser, AuthData.class, false);
     }
 
-    public void logout() throws ResponseException {
+    public void logoutUser() throws ResponseException {
         String path = "/session";
         this.makeRequest("DELETE", path, null, null, true);
+    }
+
+    public void createGame(GameData newGame) throws ResponseException {
+        String path = "/game";
+        this.makeRequest("POST", path, newGame, GameIDResponse.class, true);
+    }
+
+    public GameResponseClass listGames() throws ResponseException {
+        String path = "/game";
+        return this.makeRequest("GET", path, null, GameResponseClass.class, true);
     }
 
     public void delete() throws ResponseException {
