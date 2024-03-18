@@ -13,18 +13,18 @@ import java.util.Objects;
  */
 public class ChessPiece {
 
-    private ChessPiece.PieceType pieceType;
+    private PieceType pieceType;
     private ChessGame.TeamColor teamColor;
 
     private boolean hasMoved;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         teamColor = pieceColor;
         pieceType = type;
         hasMoved = false;
     }
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type, boolean hasMoved) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type, boolean hasMoved) {
         teamColor = pieceColor;
         pieceType = type;
         this.hasMoved = hasMoved;
@@ -41,6 +41,18 @@ public class ChessPiece {
     @Override
     public int hashCode() {
         return Objects.hash(pieceType, teamColor);
+    }
+
+    @Override
+    public String toString() {
+        return switch (pieceType) {
+            case KING -> "K";
+            case QUEEN -> "Q";
+            case BISHOP -> "B";
+            case KNIGHT -> "N";
+            case ROOK -> "R";
+            case PAWN -> "P";
+        };
     }
 
     /**

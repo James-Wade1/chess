@@ -48,6 +48,34 @@ public class ChessBoard {
         return Arrays.deepHashCode(chessBoard);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        for (int row = 8; row > 0; row--) {
+            output.append("|");
+            for (int col = 1; col < 9; col++) {
+                ChessPiece currentPiece = getPiece(new ChessPosition(row, col));
+                if (currentPiece != null){
+                    if (currentPiece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+                        output.append(currentPiece.toString().toLowerCase());
+                    }
+                    else {
+                        output.append(currentPiece.toString());
+                    }
+                }
+                else {
+                    output.append(" ");
+                }
+                output.append("|");
+            }
+            if (row != 1) {
+                output.append("\n");
+            }
+        }
+
+        return output.toString();
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *

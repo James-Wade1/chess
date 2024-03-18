@@ -47,7 +47,8 @@ public class ChessClient {
                     state = UserState.LOGGEDOUT;
                 }
                 else if (tokens[0].equals("JoinGame") || tokens[0].equals("JoinObserver")) {
-                    state = UserState.GAMEPLAY;
+                    //state = UserState.GAMEPLAY;
+                    return gameplayClient.printBoard();
                 }
                 else if (tokens[0].equals("Delete")) {
                     state = UserState.LOGGEDOUT;
@@ -55,7 +56,7 @@ public class ChessClient {
                 return output;
             }
             else if (state == UserState.GAMEPLAY) {
-                //return gameplayClient.run();
+                //return gameplayClient.printBoard();
                 return "";
             }
             else {

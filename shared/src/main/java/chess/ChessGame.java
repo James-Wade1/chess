@@ -26,6 +26,8 @@ public class ChessGame {
         teamTurn = TeamColor.WHITE;
         previousMoveDoublePawn = false;
         previousMoveDoublePawnLocation = null;
+        board = new ChessBoard();
+        board.resetBoard();
     }
 
     /**

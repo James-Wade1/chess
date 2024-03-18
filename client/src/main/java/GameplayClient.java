@@ -1,3 +1,5 @@
+import chess.ChessBoard;
+
 public class GameplayClient {
 
     ServerFacade server;
@@ -6,7 +8,10 @@ public class GameplayClient {
         this.server = server;
     }
 
-    public String run() {
-        return "";
+    public String printBoard() {
+        ChessBoard board = new ChessBoard();
+        board.resetBoard();
+        String boardStr = board.toString();
+        return board.toString();
     }
 }
