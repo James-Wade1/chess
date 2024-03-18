@@ -14,8 +14,6 @@ public class ChessClient {
 
     private UserState state;
 
-    private AuthData authToken = null;
-
     public ChessClient(String serverURL) {
         this.serverURL = serverURL;
         this.state = UserState.LOGGEDOUT;
