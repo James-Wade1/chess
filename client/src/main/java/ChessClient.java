@@ -14,26 +14,29 @@ public class ChessClient {
 
     private UserState state;
 
+    private LoggedOutClient loggedOutClient;
+
     public ChessClient(String serverURL) {
         this.serverURL = serverURL;
         this.state = UserState.LOGGEDOUT;
-        server = new ServerFacade(this.serverURL);
+        this.server = new ServerFacade(this.serverURL);
+        this.loggedOutClient = new LoggedOutClient(this.server);
     }
 
     public String eval(String userInput) {
         try {
-            var tokens = userInput.split(" ");
-            String cmd = (tokens.length > 0) ? tokens[0] : "Help";
-            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            return switch (cmd) {
-                case "Quit" -> "Quit";
-                case "Help" -> help();
-                case "Login" -> login(params);
-                case "Register" -> register(params);
-                case "Logout" -> logout();
-                case "Delete" -> delete(params);
-                default -> "Unknown command. Please try again";
-            };
+            if (state == UserState.LOGGEDOUT) {
+                return loggedOutClient.eval(userInput, state);
+            }
+            else if (state == UserState.LOGGEDIN) {
+                return "";
+            }
+            else if (state == UserState.GAMEPLAY) {
+                return "";
+            }
+            else {
+                throw new ResponseException(500, "Unknown failure");
+            }
         } catch (UIException ex) {
             return ex.getMessage();
         } catch (ResponseException ex) {
@@ -41,16 +44,19 @@ public class ChessClient {
         }
     }
 
+
+
+    private String logout() throws UIException {
+        if (state == UserState.LOGGEDOUT) {
+            throw new UIException("Need to be logged in first");
+        }
+        return "";
+    }
+
     public String help() {
         String helpOutput = "";
         if (state == UserState.LOGGEDOUT) {
-            helpOutput = """
-                    - Help
-                    - Quit
-                    - Login <username> <password>
-                    - Register <username> <password> <email>
-                    - Delete
-                    """;
+            return loggedOutClient.help();
         }
         else if (state == UserState.LOGGEDIN) {
             helpOutput = """
@@ -69,41 +75,6 @@ public class ChessClient {
                     """;
         }
         return helpOutput;
-    }
-
-    private String login(String... params) throws UIException, ResponseException {
-        if (params.length == 2) {
-            UserData returningUser = new UserData(params[0], params[1], null);
-            server.login(returningUser);
-            state = UserState.LOGGEDIN;
-            return String.format("%s logged in", params[0]);
-        }
-        throw new UIException("Expected: Login <username> <password>");
-    }
-
-    private String register(String... params) throws UIException, ResponseException {
-        if (params.length == 3) {
-            UserData newUser = new UserData(params[0], params[1], params[2]);
-            server.register(newUser);
-            return String.format("Registered user %s", params[0]);
-        }
-        throw new UIException("Expected: Register <username> <password> <email>");
-    }
-
-    private String logout() throws UIException {
-        if (state == UserState.LOGGEDOUT) {
-            throw new UIException("Need to be logged in first");
-        }
-        return "";
-    }
-
-    private String delete(String... params) throws UIException, ResponseException {
-        state = UserState.LOGGEDOUT;
-        if (params.length == 0) {
-            server.delete();
-            return "Deleted all data";
-        }
-        throw new UIException("Expected: Delete");
     }
 
     public String getUserState() {
