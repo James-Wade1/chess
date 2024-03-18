@@ -39,7 +39,7 @@ public class LoggedOutClient {
     private String login(String... params) throws UIException, ResponseException {
         if (params.length == 2) {
             UserData returningUser = new UserData(params[0], params[1], null);
-            server.login(returningUser);
+            server.loginUser(returningUser);
             return String.format("%s logged in", params[0]);
         }
         throw new UIException("Expected: Login <username> <password>");
@@ -48,7 +48,7 @@ public class LoggedOutClient {
     private String register(String... params) throws UIException, ResponseException {
         if (params.length == 3) {
             UserData newUser = new UserData(params[0], params[1], params[2]);
-            server.register(newUser);
+            server.registerUser(newUser);
             return String.format("Registered user %s", params[0]);
         }
         throw new UIException("Expected: Register <username> <password> <email>");

@@ -1,4 +1,6 @@
+import model.GameData;
 import responseException.ResponseException;
+import responseGames.GameResponseClass;
 import ui.UIException;
 
 import java.util.Arrays;
@@ -31,7 +33,7 @@ public class LoggedInClient {
         return """
                 - Help
                 - Logout
-                - CreateGame
+                - CreateGame <gameName>
                 - ListGames
                 - JoinGame
                 - JoinObserver
@@ -40,18 +42,25 @@ public class LoggedInClient {
     }
     private String logout(String... params) throws UIException, ResponseException {
         if (params.length == 0) {
-            server.logout();
+            server.logoutUser();
             return "User logged out";
         }
         throw new UIException("Expected: Logout");
     }
 
-    private String createGame(String... params) {
-        return "";
+    private String createGame(String... params) throws UIException, ResponseException {
+        if (params.length == 1) {
+            server.createGame(new GameData(-1, null, null, params[0], null));
+            return String.format("Created game %s", params[0]);
+        }
+        throw new UIException("Expected: CreateGame <gameName>");
     }
 
-    private String listGames(String... params) {
-        return "";
+    private String listGames(String... params) throws UIException, ResponseException {
+        if (params.length == 0) {
+            return server.listGames().toString();
+        }
+        throw new UIException("Expected: ListGames");
     }
 
     private String joinGame(String... params) {

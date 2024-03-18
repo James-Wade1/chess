@@ -21,4 +21,21 @@ public class GameResponseClass {
     }
 
     public record GameList(int gameID, String whiteUsername, String blackUsername, String gameName) {}
+
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        output.append("Current Games:\n");
+        for (GameList game : games) {
+            output.append(String.format("""
+                    GameID: %d
+                    \tGame Name: %s
+                    \tWhite Player: %s
+                    \tBlack Player: %s
+                    
+                    """, game.gameID(), game.gameName(), ((game.whiteUsername() != null) ? game.whiteUsername(): ""), ((game.blackUsername() != null) ? game.blackUsername(): "")));
+        }
+
+        return output.toString();
+    }
 }
