@@ -173,11 +173,21 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void delete() {
+    void deleteSuccess() {
         Assertions.assertDoesNotThrow(() -> facade.registerUser(new UserData("user1", "pass1", "email")));
         Assertions.assertDoesNotThrow(() -> facade.loginUser(new UserData("user1", "pass1", null)));
         Assertions.assertDoesNotThrow(() -> facade.createGame(new GameData(-1, null, null, "game1", null)));
         Assertions.assertDoesNotThrow(() -> facade.delete());
+    }
+
+    @Test
+    void deleteFail() {
+        Assertions.assertDoesNotThrow(() -> facade.registerUser(new UserData("user1", "pass1", "email")));
+        Assertions.assertDoesNotThrow(() -> facade.loginUser(new UserData("user1", "pass1", null)));
+        Assertions.assertDoesNotThrow(() -> facade.createGame(new GameData(-1, null, null, "game1", null)));
+        Assertions.assertDoesNotThrow(() -> facade.delete());
+
+        Assertions.assertThrows(ResponseException.class, () -> facade.loginUser(new UserData("user1", "pass1", null)));
     }
 
 }
