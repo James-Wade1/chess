@@ -25,6 +25,16 @@ public class ServerFacade {
         this.makeRequest("POST", path, newUser, null, false);
     }
 
+    public void login(UserData returningUser) throws ResponseException {
+        String path = "/session";
+        authToken = this.makeRequest("POST", path, returningUser, AuthData.class, false);
+    }
+
+    public void delete() throws ResponseException {
+        String path = "/db";
+        this.makeRequest("DELETE", path, null, null, false);
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, boolean authTokenNeeded) throws ResponseException {
         try {
             URL url = (new URI(serverURL + path)).toURL();
@@ -41,6 +51,8 @@ public class ServerFacade {
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
+        } catch (ResponseException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new ResponseException(500, ex.getMessage());
         }
@@ -57,7 +69,7 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         int status = http.getResponseCode();
         if (status != 200) {
-            throw new ResponseException(200, "Failure: " + status);
+            throw new ResponseException(status, "Failure: " + status);
         }
     }
 
