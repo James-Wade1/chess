@@ -1,6 +1,7 @@
 import model.GameData;
 import responseException.ResponseException;
 import responseGames.GameResponseClass;
+import responseGames.PlayerJoinRequest;
 import ui.UIException;
 
 import java.util.Arrays;
@@ -35,8 +36,8 @@ public class LoggedInClient {
                 - Logout
                 - CreateGame <gameName>
                 - ListGames
-                - JoinGame
-                - JoinObserver
+                - JoinGame <gameID> <playerColor, white/black>
+                - JoinObserver <gameID>
                 - Delete
                 """;
     }
@@ -63,12 +64,20 @@ public class LoggedInClient {
         throw new UIException("Expected: ListGames");
     }
 
-    private String joinGame(String... params) {
-        return "";
+    private String joinGame(String... params) throws UIException, ResponseException {
+        if (params.length == 2) {
+            server.joinGame(new PlayerJoinRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
+            return String.format("User joined game %s as %s player", params[0], params[1].toLowerCase());
+        }
+        throw new UIException("Expected: JoinGame <gameID> <playerColor, white/black>");
     }
 
-    private String joinObserver(String... params) {
-        return "";
+    private String joinObserver(String... params) throws UIException, ResponseException {
+        if (params.length == 1) {
+            server.joinGame(new PlayerJoinRequest(null, Integer.parseInt(params[0])));
+            return String.format("User joined game %s as an observer", params[0]);
+        }
+        throw new UIException("Expected: JoinObserver <gameID>");
     }
 
     private String delete(String... params) throws UIException, ResponseException {

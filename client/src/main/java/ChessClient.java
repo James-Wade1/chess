@@ -43,6 +43,9 @@ public class ChessClient {
                 if (tokens[0].equals("Logout")) {
                     state = UserState.LOGGEDOUT;
                 }
+                else if (tokens[0].equals("JoinGame") || tokens[0].equals("JoinObserver")) {
+                    state = UserState.GAMEPLAY;
+                }
                 else if (tokens[0].equals("Delete")) {
                     state = UserState.LOGGEDOUT;
                 }

@@ -5,6 +5,7 @@ import model.UserData;
 import responseException.ResponseException;
 import responseGames.GameIDResponse;
 import responseGames.GameResponseClass;
+import responseGames.PlayerJoinRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +47,11 @@ public class ServerFacade {
     public GameResponseClass listGames() throws ResponseException {
         String path = "/game";
         return this.makeRequest("GET", path, null, GameResponseClass.class, true);
+    }
+
+    public void joinGame(PlayerJoinRequest joinRequest) throws ResponseException {
+        String path = "/game";
+        this.makeRequest("PUT", path, joinRequest, null, true);
     }
 
     public void delete() throws ResponseException {
