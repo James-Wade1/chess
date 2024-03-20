@@ -1,5 +1,6 @@
-import ServerFacade.ServerFacade;
-import UserStates.UserState;
+package userStates;
+
+import serverFacade.ServerFacade;
 import responseException.ResponseException;
 import ui.UIException;
 

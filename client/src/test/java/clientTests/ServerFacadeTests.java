@@ -1,6 +1,6 @@
 package clientTests;
 
-import ServerFacade.ServerFacade;
+import serverFacade.ServerFacade;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;

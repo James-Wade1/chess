@@ -1,5 +1,7 @@
-import chess.ChessPiece;
+package ui;
+
 import ui.EscapeSequences;
+import userStates.ChessClient;
 
 import java.util.Scanner;
 

@@ -1,4 +1,6 @@
-import ServerFacade.ServerFacade;
+package userStates;
+
+import serverFacade.ServerFacade;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;

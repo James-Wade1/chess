@@ -1,4 +1,4 @@
-package UserStates;
+package userStates;
 
 public enum UserState {
     LOGGEDIN,

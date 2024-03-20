@@ -1,4 +1,6 @@
-import ServerFacade.ServerFacade;
+package userStates;
+
+import serverFacade.ServerFacade;
 import model.GameData;
 import responseException.ResponseException;
 import model.PlayerJoinRequest;

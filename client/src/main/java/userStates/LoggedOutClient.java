@@ -1,4 +1,6 @@
-import ServerFacade.ServerFacade;
+package userStates;
+
+import serverFacade.ServerFacade;
 import model.UserData;
 import responseException.ResponseException;
 import ui.UIException;
