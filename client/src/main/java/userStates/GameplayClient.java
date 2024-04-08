@@ -8,6 +8,9 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import ui.EscapeSequences;
 import ui.NotificationHandler;
+import webSocketMessages.userCommands.JoinObserverCommand;
+import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.UserGameCommand;
 import websocket.GameHandler;
 import websocket.WebSocketFacade;
 
@@ -18,7 +21,9 @@ public class GameplayClient implements GameHandler {
     ServerFacade server;
     NotificationHandler notificationHandler;
 
-    WebSocketFacade wsFacade;
+    private WebSocketFacade wsFacade;
+
+    private ChessGame game;
 
     private static final String[] backgroundColors = {EscapeSequences.SET_BG_COLOR_TAN, EscapeSequences.SET_BG_COLOR_LIGHT_GREEN};
 
@@ -26,6 +31,7 @@ public class GameplayClient implements GameHandler {
         this.server = server;
         this.notificationHandler = notificationHandler;
         this.wsFacade = new WebSocketFacade(url, this);
+        this.game = null;
     }
 
     public String help() {
@@ -41,6 +47,7 @@ public class GameplayClient implements GameHandler {
 
     @Override
     public void updateGame(ChessGame game) {
+        this.game = game;
         return;
     }
 
@@ -62,6 +69,27 @@ public class GameplayClient implements GameHandler {
             case "Highlight" -> "";
             default -> "Unknown command. Please try again";
         };
+    }
+
+    public void joinGame(String userInput) throws Exception {
+        var tokens = userInput.split(" ");
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        UserGameCommand command = null;
+        if (params.length == 1) {
+            command = new JoinObserverCommand(UserGameCommand.CommandType.JOIN_PLAYER, server.getAuthToken(), Integer.parseInt(params[0]));
+        }
+        else {
+            ChessGame.TeamColor playerColor = null;
+            if (params[1].equalsIgnoreCase("WHITE")) {
+                playerColor = ChessGame.TeamColor.WHITE;
+            }
+            else {
+                playerColor = ChessGame.TeamColor.BLACK;
+            }
+            command = new JoinPlayerCommand(UserGameCommand.CommandType.JOIN_PLAYER, server.getAuthToken(), Integer.parseInt(params[0]), playerColor);
+        }
+
+        wsFacade.send(command);
     }
 
     public String printBoard() {

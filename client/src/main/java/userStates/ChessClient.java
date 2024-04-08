@@ -45,16 +45,13 @@ public class ChessClient {
             else if (state == UserState.LOGGEDIN) {
                 output = loggedInClient.eval(userInput);
 
-                if (tokens[0].equals("Logout")) {
-                    state = UserState.LOGGEDOUT;
-                }
-                else if (tokens[0].equals("JoinGame") || tokens[0].equals("JoinObserver")) {
-                    this.gameplayClient = new GameplayClient(this.server, this.serverURL, this.notificationHandler);
-                    this.gameplayClient.eval(userInput);
-                    state = UserState.GAMEPLAY;
-                }
-                else if (tokens[0].equals("Delete")) {
-                    state = UserState.LOGGEDOUT;
+                switch (tokens[0]) {
+                    case "Logout", "Delete" -> state = UserState.LOGGEDOUT;
+                    case "JoinGame", "JoinObserver" -> {
+                        this.gameplayClient = new GameplayClient(this.server, this.serverURL, this.notificationHandler);
+                        this.gameplayClient.joinGame(userInput);
+                        state = UserState.GAMEPLAY;
+                    }
                 }
                 return output;
             }
@@ -68,6 +65,8 @@ public class ChessClient {
             return ex.getMessage();
         } catch (ResponseException ex) {
             return String.format("Failure: %d", ex.statusCode());
+        } catch (Exception ex) {
+            return "Failure: 500";
         }
     }
 

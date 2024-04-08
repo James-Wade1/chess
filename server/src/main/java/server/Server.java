@@ -52,7 +52,7 @@ public class Server {
         CreateGameHandler myCreateGameHandler = new CreateGameHandler(myAuthDAO, myGameDAO, myUserDAO);
         JoinGameHandler myJoinGameHandler = new JoinGameHandler(myAuthDAO, myGameDAO, myUserDAO);
         ExceptionHandler myExceptionHandler = new ExceptionHandler();
-        WebsocketHandler webSocketHandler = new WebsocketHandler();
+        WebsocketHandler webSocketHandler = new WebsocketHandler(myAuthDAO, myGameDAO);
 
         Spark.webSocket("/connect", webSocketHandler);
 
