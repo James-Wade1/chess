@@ -1,6 +1,5 @@
 package websocket;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
@@ -18,14 +17,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @WebSocket
-public class WebsocketHandler {
+public class WebSocketHandler {
 
     private final WebSocketSessions sessions;
 
     AuthDAO myAuthDAO;
     GameDAO myGameDAO;
 
-    public WebsocketHandler(AuthDAO myAuthDAO, GameDAO myGameDAO) {
+    public WebSocketHandler(AuthDAO myAuthDAO, GameDAO myGameDAO) {
         this.myAuthDAO = myAuthDAO;
         this.myGameDAO = myGameDAO;
         sessions = new WebSocketSessions();
