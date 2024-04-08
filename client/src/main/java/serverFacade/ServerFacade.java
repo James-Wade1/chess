@@ -8,6 +8,7 @@ import responseException.ResponseException;
 import model.GameIDResponse;
 import model.GameResponseClass;
 import model.PlayerJoinRequest;
+import websocket.WebSocketFacade;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +23,7 @@ public class ServerFacade {
     String serverURL = "";
     private AuthData authToken = null;
 
-    public ServerFacade(String serverURL) {
+    public ServerFacade(String serverURL) throws ResponseException {
         this.serverURL = serverURL;
     }
 

@@ -2,6 +2,8 @@ package userStates;
 
 import serverFacade.ServerFacade;
 import responseException.ResponseException;
+import ui.ConsoleUI;
+import ui.NotificationHandler;
 import ui.UIException;
 
 public class ChessClient {
@@ -18,13 +20,15 @@ public class ChessClient {
 
     private GameplayClient gameplayClient;
 
-    public ChessClient(String serverURL) {
-        this.serverURL = serverURL;
-        this.state = UserState.LOGGEDOUT;
-        this.server = new ServerFacade(this.serverURL);
-        this.loggedOutClient = new LoggedOutClient(this.server);
-        this.loggedInClient = new LoggedInClient(this.server);
-        this.gameplayClient = new GameplayClient(this.server);
+    private NotificationHandler notificationHandler;
+
+    public ChessClient(String serverURL, ConsoleUI notificationHandler) throws ResponseException {
+            this.serverURL = serverURL;
+            this.state = UserState.LOGGEDOUT;
+            this.server = new ServerFacade(this.serverURL);
+            this.loggedOutClient = new LoggedOutClient(this.server);
+            this.loggedInClient = new LoggedInClient(this.server);
+            this.gameplayClient = new GameplayClient(this.server, this.serverURL, notificationHandler);
     }
 
     public String eval(String userInput) {
@@ -45,7 +49,7 @@ public class ChessClient {
                     state = UserState.LOGGEDOUT;
                 }
                 else if (tokens[0].equals("JoinGame") || tokens[0].equals("JoinObserver")) {
-                    //state = UserStates.UserState.GAMEPLAY;
+                    state = UserState.GAMEPLAY;
                     return gameplayClient.printBoard();
                 }
                 else if (tokens[0].equals("Delete")) {
@@ -67,37 +71,16 @@ public class ChessClient {
         }
     }
 
-
-
-    private String logout() throws UIException {
-        if (state == UserState.LOGGEDOUT) {
-            throw new UIException("Need to be logged in first");
-        }
-        return "";
-    }
-
     public String help() {
-        String helpOutput = "";
         if (state == UserState.LOGGEDOUT) {
             return loggedOutClient.help();
         }
         else if (state == UserState.LOGGEDIN) {
-            helpOutput = """
-                    - Help
-                    - Logout
-                    - CreateGame
-                    - ListGames
-                    - JoinGame
-                    - JoinObserver
-                    - Delete
-                    """;
+            return loggedInClient.help();
         }
-        else if (state == UserState.GAMEPLAY) {
-            helpOutput = """
-                    - Example Output
-                    """;
+        else {
+            return gameplayClient.help();
         }
-        return helpOutput;
     }
 
     public String getUserState() {

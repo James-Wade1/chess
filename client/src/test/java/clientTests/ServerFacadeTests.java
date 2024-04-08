@@ -20,10 +20,14 @@ public class ServerFacadeTests {
 
     @BeforeAll
     public static void init() {
-        server = new Server();
-        int port = server.run(0);
-        System.out.println("Started test HTTP server on " + port);
-        facade = new ServerFacade(String.format("http://localhost:%d", port));
+        try {
+            server = new Server();
+            int port = server.run(0);
+            System.out.println("Started test HTTP server on " + port);
+            facade = new ServerFacade(String.format("http://localhost:%d", port));
+        } catch (ResponseException ex) {
+            Assertions.fail("Expected not error but got " + ex.getMessage());
+        }
     }
 
     @BeforeEach

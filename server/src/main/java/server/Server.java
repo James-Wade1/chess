@@ -52,6 +52,8 @@ public class Server {
         JoinGameHandler myJoinGameHandler = new JoinGameHandler(myAuthDAO, myGameDAO, myUserDAO);
         ExceptionHandler myExceptionHandler = new ExceptionHandler();
 
+        Spark.webSocket("/connect", webSocketHandler);
+
         /*Define HTTP endpoints*/
         Spark.delete("/db", mySystemHandler::clearData);
         Spark.post("/user", myRegisterHandler::registerUser);

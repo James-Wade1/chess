@@ -1,20 +1,50 @@
 package userStates;
 
+import responseException.ResponseException;
 import serverFacade.ServerFacade;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import ui.EscapeSequences;
+import ui.NotificationHandler;
+import websocket.GameHandler;
+import websocket.WebSocketFacade;
 
-public class GameplayClient {
+public class GameplayClient implements GameHandler {
 
     ServerFacade server;
+    NotificationHandler notificationHandler;
+
+    WebSocketFacade wsFacade;
 
     private static final String[] backgroundColors = {EscapeSequences.SET_BG_COLOR_TAN, EscapeSequences.SET_BG_COLOR_LIGHT_GREEN};
 
-    public GameplayClient(ServerFacade server) {
+    public GameplayClient(ServerFacade server, String url, NotificationHandler notificationHandler) throws ResponseException {
         this.server = server;
+        this.notificationHandler = notificationHandler;
+        this.wsFacade = new WebSocketFacade(url, this);
+    }
+
+    public String help() {
+        return """
+                - Help
+                - Redraw
+                - Leave
+                - MakeMove
+                - Resign
+                - Highlight
+                """;
+    }
+
+    @Override
+    public void updateGame(ChessGame game) {
+        return;
+    }
+
+    @Override
+    public void printMessage(String message) {
+        notificationHandler.printNotification(message);
     }
 
     public String printBoard() {
@@ -53,7 +83,6 @@ public class GameplayClient {
     }
 
     private String parseBoard(String board) {
-        String whiteBottom = printWhiteBottom(board);
         return printWhiteBottom(board) + "\n\n" + printBlackBottom(board);
     }
 
@@ -189,4 +218,9 @@ public class GameplayClient {
 
         return output.toString();
     }
+
+
 }
+
+
+
