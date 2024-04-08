@@ -1,5 +1,7 @@
 package chess;
 
+import responseException.ResponseException;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,6 +67,24 @@ public class ChessGame {
     public enum TeamColor {
         WHITE,
         BLACK
+    }
+
+    public String getValidMovesString(int row, int col) throws InvalidMoveException {
+        ChessBoard newBoard = new ChessBoard(this.board);
+
+        ChessPosition position = new ChessPosition(row, col);
+        HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(position);
+
+        if (validMoves == null) {
+            throw new InvalidMoveException("No piece at that spot");
+        }
+
+        for (ChessMove move : validMoves) {
+            newBoard.getPiece(move.getEndPosition()).setValidMove(true);
+        }
+        newBoard.getPiece(position).setStartSpot(true);
+
+        return newBoard.toString();
     }
 
     /**
@@ -325,7 +345,7 @@ public class ChessGame {
         board.removePiece(rookPosition);
     }
 
-    public boolean isInvalidCastling(TeamColor teamColor) {
+    private boolean isInvalidCastling(TeamColor teamColor) {
         HashSet<ChessPosition> opponentPieces;
 
         ChessPosition kingPosition = board.getKingPosition(teamColor);
@@ -356,7 +376,7 @@ public class ChessGame {
         return false;
     }
 
-    public boolean isDoublePawnMove(ChessMove move) {
+    private boolean isDoublePawnMove(ChessMove move) {
         ChessGame.TeamColor color = board.getPiece(move.getStartPosition()).getTeamColor();
         int homeRow;
         int doubleMoveRow;
@@ -373,7 +393,7 @@ public class ChessGame {
         return move.getStartPosition().getRow() == homeRow && move.getEndPosition().getRow() == doubleMoveRow;
     }
 
-    public ChessMove getEnPassantMove(ChessPosition startPosition, ChessPosition previousMoveDoublePawnLocation) {
+    private ChessMove getEnPassantMove(ChessPosition startPosition, ChessPosition previousMoveDoublePawnLocation) {
         ChessMove move;
 
         TeamColor color = board.getPiece(startPosition).getTeamColor();
@@ -391,7 +411,7 @@ public class ChessGame {
         return move;
     }
 
-    public boolean isEnPassantMove(ChessMove move) {
+    private boolean isEnPassantMove(ChessMove move) {
         return board.getPiece(move.getEndPosition()) == null && move.getEndPosition().getColumn() != move.getStartPosition().getColumn();
     }
 

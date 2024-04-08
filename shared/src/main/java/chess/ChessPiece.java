@@ -18,16 +18,24 @@ public class ChessPiece {
 
     private boolean hasMoved;
 
+    private boolean validMove;
+
+    private boolean startSpot;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         teamColor = pieceColor;
         pieceType = type;
         hasMoved = false;
+        validMove = false;
+        startSpot = false;
     }
 
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type, boolean hasMoved) {
         teamColor = pieceColor;
         pieceType = type;
         this.hasMoved = hasMoved;
+        validMove = false;
+        startSpot = false;
     }
 
     @Override
@@ -120,5 +128,21 @@ public class ChessPiece {
         };
 
         return moves;
+    }
+
+    public void setValidMove(boolean valid) {
+        this.validMove = valid;
+    }
+
+    public boolean isValidMove() {
+        return this.validMove;
+    }
+
+    public void setStartSpot(boolean bool) {
+        this.startSpot = bool;
+    }
+
+    public boolean isStartSpot() {
+        return this.startSpot;
     }
 }

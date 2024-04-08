@@ -56,11 +56,25 @@ public class ChessBoard {
             for (int col = 1; col < 9; col++) {
                 ChessPiece currentPiece = getPiece(new ChessPosition(row, col));
                 if (currentPiece != null){
+                    if (currentPiece.isValidMove()) {
+                        output.append("v");
+                    }
+                    else if (currentPiece.isStartSpot()) {
+                        output.append("s");
+                    }
+
                     if (currentPiece.getTeamColor() == ChessGame.TeamColor.BLACK) {
                         output.append(currentPiece.toString().toLowerCase());
                     }
                     else {
                         output.append(currentPiece.toString());
+                    }
+
+                    if (currentPiece.isValidMove()) {
+                        output.append("v");
+                    }
+                    else if (currentPiece.isStartSpot()) {
+                        output.append("s");
                     }
                 }
                 else {

@@ -1,5 +1,6 @@
 package userStates;
 
+import chess.InvalidMoveException;
 import serverFacade.ServerFacade;
 import responseException.ResponseException;
 import ui.ConsoleUI;
@@ -65,6 +66,8 @@ public class ChessClient {
             return ex.getMessage();
         } catch (ResponseException ex) {
             return String.format("Failure: %d", ex.statusCode());
+        } catch (InvalidMoveException ex) {
+            return String.format("Failure: %s", ex.getMessage());
         } catch (Exception ex) {
             return "Failure: 500";
         }

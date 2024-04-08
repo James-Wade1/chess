@@ -1,16 +1,10 @@
 package userStates;
 
+import chess.*;
 import responseException.ResponseException;
 import serverFacade.ServerFacade;
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
 import ui.EscapeSequences;
 import ui.NotificationHandler;
-import webSocketMessages.userCommands.JoinObserverCommand;
-import webSocketMessages.userCommands.JoinPlayerCommand;
-import webSocketMessages.userCommands.UserGameCommand;
 import websocket.GameHandler;
 import websocket.WebSocketFacade;
 
@@ -43,14 +37,14 @@ public class GameplayClient implements GameHandler {
                 - Leave
                 - MakeMove
                 - Resign
-                - Highlight
+                - Highlight <letter> <number>
                 """;
     }
 
     @Override
     public void updateGame(ChessGame game) {
         this.game = game;
-        notificationHandler.notify(printBord());
+        notificationHandler.notify(printBoard());
     }
 
     @Override
@@ -58,7 +52,7 @@ public class GameplayClient implements GameHandler {
         notificationHandler.notify(message);
     }
 
-    public String eval(String userInput) {
+    public String eval(String userInput) throws ResponseException, InvalidMoveException {
         var tokens = userInput.split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "Help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -68,17 +62,21 @@ public class GameplayClient implements GameHandler {
             case "Leave" -> "";
             case "MakeMove" -> "";
             case "Resign" -> "";
-            case "Highlight" -> highlightMoves();
+            case "Highlight" -> highlightMoves(Integer.parseInt(params[1]), params[0].charAt(0));
             default -> "Unknown command. Please try again\n" + help();
         };
     }
 
     private String redraw() {
-        return printBord();
+        return printBoard();
     }
 
-    private String highlightMoves() {
-
+    private String highlightMoves(int row, char col) throws ResponseException, InvalidMoveException {
+        if (row < 'a' || row > 'h' || col < 1 || col > 8) {
+            throw new ResponseException(500, "Invalid boundaries");
+        }
+        String output = this.game.getValidMovesString(row, ((int) col) - 96);
+        System.out.println(output);
         return "";
     }
 
@@ -100,7 +98,7 @@ public class GameplayClient implements GameHandler {
         }
     }
 
-    private String printBord() {
+    private String printBoard() {
         if (this.playerColor == null || this.playerColor == ChessGame.TeamColor.WHITE) {
             return printWhiteBottom(this.game.getBoard().toString());
         }
