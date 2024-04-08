@@ -6,6 +6,7 @@ import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
 import java.net.URI;
@@ -54,8 +55,8 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void send(String msg) throws Exception {
-        this.session.getBasicRemote().sendText(msg);
+    public void send(UserGameCommand command) throws Exception {
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
     @Override

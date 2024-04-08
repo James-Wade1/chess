@@ -8,27 +8,27 @@ import ui.UIException;
 
 public class ChessClient {
 
-    private String serverURL;
+    private final String serverURL;
 
-    private ServerFacade server;
+    private final ServerFacade server;
 
     private UserState state;
 
-    private LoggedOutClient loggedOutClient;
+    private final LoggedOutClient loggedOutClient;
 
-    private LoggedInClient loggedInClient;
+    private final LoggedInClient loggedInClient;
 
     private GameplayClient gameplayClient;
 
-    private NotificationHandler notificationHandler;
+    private final NotificationHandler notificationHandler;
 
     public ChessClient(String serverURL, ConsoleUI notificationHandler) throws ResponseException {
             this.serverURL = serverURL;
             this.state = UserState.LOGGEDOUT;
             this.server = new ServerFacade(this.serverURL);
+            this.notificationHandler = notificationHandler;
             this.loggedOutClient = new LoggedOutClient(this.server);
             this.loggedInClient = new LoggedInClient(this.server);
-            this.gameplayClient = new GameplayClient(this.server, this.serverURL, notificationHandler);
     }
 
     public String eval(String userInput) {
@@ -49,8 +49,9 @@ public class ChessClient {
                     state = UserState.LOGGEDOUT;
                 }
                 else if (tokens[0].equals("JoinGame") || tokens[0].equals("JoinObserver")) {
+                    this.gameplayClient = new GameplayClient(this.server, this.serverURL, this.notificationHandler);
+                    this.gameplayClient.eval(userInput);
                     state = UserState.GAMEPLAY;
-                    return gameplayClient.printBoard();
                 }
                 else if (tokens[0].equals("Delete")) {
                     state = UserState.LOGGEDOUT;
@@ -58,8 +59,7 @@ public class ChessClient {
                 return output;
             }
             else if (state == UserState.GAMEPLAY) {
-                //return gameplayClient.printBoard();
-                return "";
+                return gameplayClient.eval(userInput);
             }
             else {
                 throw new ResponseException(500, "Unknown failure");

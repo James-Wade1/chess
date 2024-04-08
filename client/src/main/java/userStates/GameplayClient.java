@@ -11,6 +11,8 @@ import ui.NotificationHandler;
 import websocket.GameHandler;
 import websocket.WebSocketFacade;
 
+import java.util.Arrays;
+
 public class GameplayClient implements GameHandler {
 
     ServerFacade server;
@@ -45,6 +47,21 @@ public class GameplayClient implements GameHandler {
     @Override
     public void printMessage(String message) {
         notificationHandler.printNotification(message);
+    }
+
+    public String eval(String userInput) {
+        var tokens = userInput.split(" ");
+        String cmd = (tokens.length > 0) ? tokens[0] : "Help";
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        return switch (cmd) {
+            case "Help" -> help();
+            case "Redraw" -> "";
+            case "Leave" -> "";
+            case "MakeMove" -> "";
+            case "Resign" -> "";
+            case "Highlight" -> "";
+            default -> "Unknown command. Please try again";
+        };
     }
 
     public String printBoard() {
