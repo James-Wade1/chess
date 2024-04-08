@@ -6,6 +6,7 @@ import service.SystemService;
 import spark.*;
 import handlers.*;
 import responseException.ResponseException;
+import websocket.WebsocketHandler;
 
 import java.util.HashSet;
 
@@ -51,6 +52,7 @@ public class Server {
         CreateGameHandler myCreateGameHandler = new CreateGameHandler(myAuthDAO, myGameDAO, myUserDAO);
         JoinGameHandler myJoinGameHandler = new JoinGameHandler(myAuthDAO, myGameDAO, myUserDAO);
         ExceptionHandler myExceptionHandler = new ExceptionHandler();
+        WebsocketHandler webSocketHandler = new WebsocketHandler();
 
         Spark.webSocket("/connect", webSocketHandler);
 
