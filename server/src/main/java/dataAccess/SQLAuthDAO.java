@@ -22,7 +22,7 @@ public class SQLAuthDAO implements AuthDAO {
         String authToken = UUID.randomUUID().toString();
         AuthData newAuth = new AuthData(authToken, username);
         String commands = "INSERT INTO authDatabase (authToken, username) VALUES (?, ?)";
-        executeUpdate(commands, authToken, username);
+        DatabaseManager.executeUpdate(commands, authToken, username);
         return newAuth;
     }
 
@@ -50,7 +50,7 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new DataAccessException("AuthData to be removed not found");
             }
             String command = "DELETE FROM authDatabase WHERE authToken=?";
-            executeUpdate(command, authToken);
+            DatabaseManager.executeUpdate(command, authToken);
         } catch (ResponseException ex) {
             throw new DataAccessException(ex.getMessage());
         }
@@ -58,7 +58,7 @@ public class SQLAuthDAO implements AuthDAO {
 
     public void clearAuthData() throws ResponseException {
         String command = "DELETE FROM authDatabase";
-        executeUpdate(command);
+        DatabaseManager.executeUpdate(command);
     }
 
     private final String[] createStatements = {
@@ -72,17 +72,4 @@ public class SQLAuthDAO implements AuthDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
             """
     };
-
-    private void executeUpdate(String commands, String... params) throws ResponseException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(commands)) {
-                for (int i = 0; i < params.length; i++) {
-                    ps.setString(i+1, params[i]);
-                }
-                ps.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500, e.getMessage());
-        }
-    }
 }

@@ -61,6 +61,19 @@ public class DatabaseManager {
         }
     }
 
+    static void executeUpdate(String commands, String... params) {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(commands)) {
+                for (int i = 0; i < params.length; i ++) {
+                    ps.setString(i+1, params[i]);
+                }
+                ps.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Create a connection to the database and sets the catalog based upon the
      * properties specified in db.properties. Connections to the database should

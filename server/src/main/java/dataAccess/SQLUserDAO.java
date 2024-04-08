@@ -23,7 +23,7 @@ public class SQLUserDAO implements UserDAO{
 
     public void createUser(UserData newUser) throws ResponseException {
         String command = "INSERT INTO userDatabase (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(command, newUser.username(), encryptUserPassword(newUser.password()), newUser.email());
+        DatabaseManager.executeUpdate(command, newUser.username(), encryptUserPassword(newUser.password()), newUser.email());
     }
 
     public UserData getUser(String username) throws ResponseException {
@@ -45,7 +45,7 @@ public class SQLUserDAO implements UserDAO{
 
     public void clearUsers() throws ResponseException {
         String command = "DELETE FROM userDatabase";
-        executeUpdate(command);
+        DatabaseManager.executeUpdate(command);
     }
 
     public boolean verifyPassword(String databankPassword, String returningUserPassword) {
@@ -64,34 +64,8 @@ public class SQLUserDAO implements UserDAO{
             """
     };
 
-    private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
-
     private String encryptUserPassword(String password) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);
-    }
-
-    private void executeUpdate(String commands, String... params) {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(commands)) {
-                for (int i = 0; i < params.length; i ++) {
-                    ps.setString(i+1, params[i]);
-                }
-                ps.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
