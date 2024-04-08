@@ -19,7 +19,7 @@ import java.util.Map;
 @WebSocket
 public class WebSocketHandler {
 
-    private final WebSocketSessions sessions;
+    private WebSocketSessions sessions = null;
 
     AuthDAO myAuthDAO;
     GameDAO myGameDAO;
@@ -56,15 +56,15 @@ public class WebSocketHandler {
         String notificationMessage = String.format("%s joined the game as the %s player", myAuthDAO.getAuth(authToken).username(), command.getPlayerColor().name().toLowerCase());
         broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
     }
-
     @OnWebSocketConnect
     public void onConnect(Session session) {}
 
     @OnWebSocketClose
-    public void onClose(Session session) {}
+    public void onClose(int statusCode, String reason) {}
 
     @OnWebSocketError
-    public void onError(Session session) {}
+    public void onError(Throwable cause) {}
+
 
     private void sendMessage(int gameID, ServerMessage serverMessage, String authToken) throws IOException {
         HashMap<String, Session> game = sessions.getSessionsForGame(gameID);

@@ -51,6 +51,7 @@ public class WebSocketFacade extends Endpoint {
             });
 
         } catch (DeploymentException | URISyntaxException | IOException ex) {
+            System.out.println(ex.getMessage());
             throw new ResponseException(500, ex.getMessage());
         }
     }
@@ -60,10 +61,5 @@ public class WebSocketFacade extends Endpoint {
     }
 
     @Override
-    public void onOpen(Session session, EndpointConfig endpointConfig) {
-    }
-
-    public void onClose(Session session, EndpointConfig endpointConfig) {}
-
-    public void onError(Session session, EndpointConfig endpointConfig) {}
+    public void onOpen(Session session, EndpointConfig endpointConfig) {}
 }
