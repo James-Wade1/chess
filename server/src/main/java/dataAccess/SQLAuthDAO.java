@@ -12,7 +12,7 @@ public class SQLAuthDAO implements AuthDAO {
 
     public SQLAuthDAO() {
         try {
-            this.configureDatabase();
+            DatabaseManager.configureDatabase(createStatements);
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
@@ -72,19 +72,6 @@ public class SQLAuthDAO implements AuthDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
             """
     };
-
-    private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
 
     private void executeUpdate(String commands, String... params) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {

@@ -18,7 +18,7 @@ public class SQLGameDAO implements GameDAO {
 
     public SQLGameDAO() {
         try {
-            this.configureDatabase();
+            DatabaseManager.configureDatabase(createStatements);
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
@@ -123,19 +123,6 @@ public class SQLGameDAO implements GameDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
             """
     };
-
-    private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
 
     private void executeUpdate(String commands, Object... params) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {

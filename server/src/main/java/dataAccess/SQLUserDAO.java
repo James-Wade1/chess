@@ -11,11 +11,11 @@ import java.sql.SQLException;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
-public class SQLUserDAO implements UserDAO {
+public class SQLUserDAO implements UserDAO{
 
     public SQLUserDAO() {
         try {
-            this.configureDatabase();
+            DatabaseManager.configureDatabase(createStatements);
         } catch(DataAccessException | ResponseException ex) {
             throw new RuntimeException(ex);
         }
