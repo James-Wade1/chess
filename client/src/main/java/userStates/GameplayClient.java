@@ -72,12 +72,11 @@ public class GameplayClient implements GameHandler {
     }
 
     private String highlightMoves(int row, char col) throws ResponseException, InvalidMoveException {
-        if (row < 'a' || row > 'h' || col < 1 || col > 8) {
+        if (row < 1 || row > 8 || col < 'a' || col > 'h') {
             throw new ResponseException(500, "Invalid boundaries");
         }
-        String output = this.game.getValidMovesString(row, ((int) col) - 96);
-        System.out.println(output);
-        return "";
+        String highlightedBoard = this.game.getValidMovesString(row, ((int) col) - 96);
+        return printHighlightedBoard(highlightedBoard);
     }
 
     public void joinGame(String userInput) throws Exception {
@@ -104,6 +103,15 @@ public class GameplayClient implements GameHandler {
         }
         else {
             return printBlackBottom(this.game.getBoard().toString());
+        }
+    }
+
+    private String printHighlightedBoard(String board) {
+        if (this.playerColor == null || this.playerColor == ChessGame.TeamColor.WHITE) {
+            return printWhiteBottom(board);
+        }
+        else {
+            return printBlackBottom(board);
         }
     }
 
@@ -186,6 +194,7 @@ public class GameplayClient implements GameHandler {
         StringBuilder output = new StringBuilder();
         int numRow = startRow;
         int i = 0;
+        boolean specialSpotFirstEntry = false;
         for (var row : rows) {
             i = toggle ? 0 : 1;
             toggle = !toggle;
@@ -195,17 +204,39 @@ public class GameplayClient implements GameHandler {
             for (var c : row.toCharArray()) {
                 switch(c) {
                     case '|' -> output.append(EscapeSequences.BORDER);
+                    case 's' -> {
+                        if (specialSpotFirstEntry == false) {
+                            output.append(EscapeSequences.SET_BG_COLOR_GREEN);
+                            specialSpotFirstEntry = true;
+                        }
+                        else {
+                            specialSpotFirstEntry = false;
+                        }
+                    }
+                    case 'v' -> {
+                        if (specialSpotFirstEntry == false) {
+                            output.append(EscapeSequences.SET_BG_COLOR_YELLOW);
+                            specialSpotFirstEntry = true;
+                        }
+                        else {
+                            specialSpotFirstEntry = false;
+                        }
+                    }
                     case ' ' -> {
                         i = toggle ? 0 : 1;
                         toggle = !toggle;
-                        output.append(backgroundColors[i]);
+                        if (specialSpotFirstEntry == false) {
+                            output.append(backgroundColors[i]);
+                        }
                         output.append(EscapeSequences.EMPTY);
                         output.append(EscapeSequences.RESET_BG_COLOR);
                     }
                     default -> {
                         i = toggle ? 0 : 1;
                         toggle = !toggle;
-                        output.append(backgroundColors[i]);
+                        if (specialSpotFirstEntry == false) {
+                            output.append(backgroundColors[i]);
+                        }
                         output.append(EscapeSequences.SET_TEXT_COLOR_BLACK);
                         output.append(parseChessCharacter(c));
                         output.append(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);

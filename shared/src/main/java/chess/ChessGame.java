@@ -80,7 +80,13 @@ public class ChessGame {
         }
 
         for (ChessMove move : validMoves) {
-            newBoard.getPiece(move.getEndPosition()).setValidMove(true);
+            ChessPiece piece = newBoard.getPiece(move.getEndPosition());
+            if (piece != null) {
+                newBoard.getPiece(move.getEndPosition()).setValidMove(true);
+            }
+            else {
+                newBoard.addPiece(move.getEndPosition(), new ChessPiece(true));
+            }
         }
         newBoard.getPiece(position).setStartSpot(true);
 

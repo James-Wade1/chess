@@ -38,6 +38,14 @@ public class ChessPiece {
         startSpot = false;
     }
 
+    public ChessPiece(boolean validMove) {
+        teamColor = null;
+        pieceType = null;
+        this.hasMoved = false;
+        this.validMove = validMove;
+        startSpot = false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

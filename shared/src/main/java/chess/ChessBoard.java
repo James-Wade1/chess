@@ -66,8 +66,11 @@ public class ChessBoard {
                     if (currentPiece.getTeamColor() == ChessGame.TeamColor.BLACK) {
                         output.append(currentPiece.toString().toLowerCase());
                     }
-                    else {
+                    else if (currentPiece.getTeamColor() == ChessGame.TeamColor.WHITE){
                         output.append(currentPiece.toString());
+                    }
+                    else {
+                        output.append(" ");
                     }
 
                     if (currentPiece.isValidMove()) {
