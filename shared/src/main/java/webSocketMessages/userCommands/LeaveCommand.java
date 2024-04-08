@@ -9,4 +9,8 @@ public class LeaveCommand extends UserGameCommand {
         this.commandType = commandType;
         this.gameID = gameID;
     }
+
+    public int getGameID() {
+        return gameID;
+    }
 }

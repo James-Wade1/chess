@@ -87,8 +87,8 @@ public class WebSocketFacade extends Endpoint {
         send(command);
     }
 
-    public void leaveGame(LeaveCommand command) throws IOException {
-        send(command);
+    public void leaveGame(String authToken, int gameID) throws IOException {
+        send(new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
     }
 
     public void resignGame(ResignCommand command) throws IOException {

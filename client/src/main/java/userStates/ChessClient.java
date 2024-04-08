@@ -57,7 +57,11 @@ public class ChessClient {
                 return output;
             }
             else if (state == UserState.GAMEPLAY) {
-                return gameplayClient.eval(userInput);
+                output = gameplayClient.eval(userInput);
+                if (tokens[0].equals("Leave")) {
+                    state = UserState.LOGGEDIN;
+                }
+                return output;
             }
             else {
                 throw new ResponseException(500, "Unknown failure");

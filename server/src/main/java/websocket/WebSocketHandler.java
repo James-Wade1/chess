@@ -1,16 +1,21 @@
 package websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
+import model.AuthData;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import responseException.ResponseException;
+import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.LeaveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
@@ -44,7 +49,10 @@ public class WebSocketHandler {
                 joinObserver(session, command);
             }
             case MAKE_MOVE -> {}
-            case LEAVE -> {}
+            case LEAVE -> {
+                LeaveCommand command = new Gson().fromJson(message, LeaveCommand.class);
+                leaveGame(session, command);
+            }
             case RESIGN -> {}
         }
     }
@@ -52,9 +60,42 @@ public class WebSocketHandler {
     private void joinPlayer(Session session, JoinPlayerCommand command) throws ResponseException, IOException {
         int gameID = command.getGameID();
         String authToken = command.getAuthString();
-        this.sessions.addSessionToGame(gameID, authToken, session);
+        AuthData authData = myAuthDAO.getAuth(authToken);
+        if (authData == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: bad authToken"));
+            return;
+        }
+        String username = authData.username();
+        GameData game = myGameDAO.getGame(gameID);
+        if (game == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: bad game ID"));
+            return;
+        }
 
-        LoadGameMessage rootMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGameDAO.getGame(gameID).game());
+        if (command.getPlayerColor() == ChessGame.TeamColor.WHITE) {
+            if (game.whiteUsername() == null) {
+                sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: http join request not yet called"));
+                return;
+            }
+            else if (!game.whiteUsername().equals(username)) {
+                sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: white spot already occupied"));
+                return;
+            }
+        }
+        else if (command.getPlayerColor() == ChessGame.TeamColor.BLACK) {
+            if (game.blackUsername() == null) {
+                sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: http join request not yet called"));
+                return;
+            }
+            else if (!game.blackUsername().equals(username)) {
+                sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: black spot already occupied"));
+                return;
+            }
+        }
+
+
+        this.sessions.addSessionToGame(gameID, authToken, session);
+        LoadGameMessage rootMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game());
         sendMessage(gameID, rootMessage, authToken);
 
         String notificationMessage = String.format("%s joined the game as the %s player", myAuthDAO.getAuth(authToken).username(), command.getPlayerColor().name().toLowerCase());
@@ -73,6 +114,14 @@ public class WebSocketHandler {
         broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
     }
 
+    private void leaveGame(Session session, LeaveCommand command) throws ResponseException, IOException {
+        int gameID = command.getGameID();
+        String authToken = command.getAuthString();
+        String notificationMessage = String.format("%s is leaving the game", myAuthDAO.getAuth(authToken).username());
+        broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
+        this.sessions.removeSessionFromGame(gameID, authToken, session);
+    }
+
     @OnWebSocketConnect
     public void onConnect(Session session) {}
 
@@ -86,6 +135,10 @@ public class WebSocketHandler {
     private void sendMessage(int gameID, ServerMessage serverMessage, String authToken) throws IOException {
         HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
         Session session = game.get(authToken);
+        session.getRemote().sendString(new Gson().toJson(serverMessage));
+    }
+
+    private void sendMessage(Session session, ServerMessage serverMessage) throws IOException {
         session.getRemote().sendString(new Gson().toJson(serverMessage));
     }
 

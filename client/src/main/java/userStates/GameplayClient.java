@@ -8,6 +8,7 @@ import ui.NotificationHandler;
 import websocket.GameHandler;
 import websocket.WebSocketFacade;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class GameplayClient implements GameHandler {
@@ -20,6 +21,8 @@ public class GameplayClient implements GameHandler {
     private ChessGame game;
 
     ChessGame.TeamColor playerColor = null;
+
+    int currentGameID = -1;
 
     private static final String[] backgroundColors = {EscapeSequences.SET_BG_COLOR_TAN, EscapeSequences.SET_BG_COLOR_LIGHT_GREEN};
 
@@ -35,9 +38,9 @@ public class GameplayClient implements GameHandler {
                 - Help
                 - Redraw
                 - Leave
-                - MakeMove
+                - MakeMove <letter<number> <letter><number
                 - Resign
-                - Highlight <letter> <number>
+                - Highlight <letter><number>
                 """;
     }
 
@@ -52,17 +55,17 @@ public class GameplayClient implements GameHandler {
         notificationHandler.notify(message);
     }
 
-    public String eval(String userInput) throws ResponseException, InvalidMoveException {
+    public String eval(String userInput) throws ResponseException, InvalidMoveException, IOException {
         var tokens = userInput.split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "Help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
             case "Help" -> help();
             case "Redraw" -> redraw();
-            case "Leave" -> "";
+            case "Leave" -> leaveGame();
             case "MakeMove" -> "";
             case "Resign" -> "";
-            case "Highlight" -> highlightMoves(Integer.parseInt(params[1]), params[0].charAt(0));
+            case "Highlight" -> highlightMoves(Character.getNumericValue(params[0].charAt(1)), params[0].charAt(0));
             default -> "Unknown command. Please try again\n" + help();
         };
     }
@@ -79,9 +82,16 @@ public class GameplayClient implements GameHandler {
         return printHighlightedBoard(highlightedBoard);
     }
 
+    private String leaveGame() throws IOException {
+        wsFacade.leaveGame(server.getAuthToken(), currentGameID);
+        this.currentGameID = -1;
+        return "";
+    }
+
     public void joinGame(String userInput) throws Exception {
         var tokens = userInput.split(" ");
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        this.currentGameID = Integer.parseInt(params[0]);
         if (params.length == 1) {
             wsFacade.joinObserver(userInput, server.getAuthToken());
             this.playerColor = null;

@@ -104,7 +104,6 @@ public class WebSocketTests {
         //try join someone else's reserved spot
         Map<String, List<TestModels.TestMessage>> messages =
                 joinPlayer(white.user, white.authToken, gameID, ChessGame.TeamColor.BLACK, Set.of(), Set.of());
-
         //check received message
         assertErrorMessage(messages.get(white.user));
     }
