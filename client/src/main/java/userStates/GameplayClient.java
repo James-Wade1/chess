@@ -25,6 +25,8 @@ public class GameplayClient implements GameHandler {
 
     private ChessGame game;
 
+    ChessGame.TeamColor playerColor = null;
+
     private static final String[] backgroundColors = {EscapeSequences.SET_BG_COLOR_TAN, EscapeSequences.SET_BG_COLOR_LIGHT_GREEN};
 
     public GameplayClient(ServerFacade server, String url, NotificationHandler notificationHandler) throws ResponseException {
@@ -48,12 +50,12 @@ public class GameplayClient implements GameHandler {
     @Override
     public void updateGame(ChessGame game) {
         this.game = game;
-        return;
+        notificationHandler.notify(printBord());
     }
 
     @Override
     public void printMessage(String message) {
-        notificationHandler.printNotification(message);
+        notificationHandler.notify(message);
     }
 
     public String eval(String userInput) {
@@ -62,44 +64,49 @@ public class GameplayClient implements GameHandler {
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
             case "Help" -> help();
-            case "Redraw" -> "";
+            case "Redraw" -> redraw();
             case "Leave" -> "";
             case "MakeMove" -> "";
             case "Resign" -> "";
-            case "Highlight" -> "";
-            default -> "Unknown command. Please try again";
+            case "Highlight" -> highlightMoves();
+            default -> "Unknown command. Please try again\n" + help();
         };
+    }
+
+    private String redraw() {
+        return printBord();
+    }
+
+    private String highlightMoves() {
+
+        return "";
     }
 
     public void joinGame(String userInput) throws Exception {
         var tokens = userInput.split(" ");
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-        UserGameCommand command = null;
         if (params.length == 1) {
-            command = new JoinObserverCommand(UserGameCommand.CommandType.JOIN_PLAYER, server.getAuthToken(), Integer.parseInt(params[0]));
+            wsFacade.joinObserver(userInput, server.getAuthToken());
+            this.playerColor = null;
         }
         else {
-            ChessGame.TeamColor playerColor = null;
+            wsFacade.joinPlayer(userInput, server.getAuthToken());
             if (params[1].equalsIgnoreCase("WHITE")) {
-                playerColor = ChessGame.TeamColor.WHITE;
+                this.playerColor = ChessGame.TeamColor.WHITE;
             }
             else {
-                playerColor = ChessGame.TeamColor.BLACK;
+                this.playerColor = ChessGame.TeamColor.BLACK;
             }
-            command = new JoinPlayerCommand(UserGameCommand.CommandType.JOIN_PLAYER, server.getAuthToken(), Integer.parseInt(params[0]), playerColor);
         }
-
-        wsFacade.send(command);
     }
 
-    public String printBoard() {
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
-        board.addPiece(new ChessPosition(3,1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN, true));
-        board.removePiece(new ChessPosition(2,1));
-        String boardStr = board.toString();
-
-        return parseBoard(boardStr);
+    private String printBord() {
+        if (this.playerColor == null || this.playerColor == ChessGame.TeamColor.WHITE) {
+            return printWhiteBottom(this.game.getBoard().toString());
+        }
+        else {
+            return printBlackBottom(this.game.getBoard().toString());
+        }
     }
 
     private String parseChessCharacter(char c) {
@@ -127,71 +134,18 @@ public class GameplayClient implements GameHandler {
         }
     }
 
-    private String parseBoard(String board) {
-        return printWhiteBottom(board) + "\n\n" + printBlackBottom(board);
-    }
-
     private String printWhiteBottom(String board) {
         var rows = board.split("\n");
         int i = 0;
         boolean toggle = false;
 
         StringBuilder output = new StringBuilder();
-        output.append(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
-        output.append(EscapeSequences.SET_BG_COLOR_TAN);
         int numRow = 8;
-        output.append("   \u2009\u200A");
-        for (char col = 'a'; col < 'i'; col++) {
-            output.append("\u2000");
-            output.append(col);
-            output.append("\u2000");
-        }
-        output.append("\u2009\u200A   ");
-        output.append(EscapeSequences.RESET_BG_COLOR);
-        output.append("\n");
 
-        for (var row : rows) {
-            i = toggle ? 0 : 1;
-            toggle = !toggle;
-            output.append(EscapeSequences.SET_BG_COLOR_TAN);
-            output.append(String.format(" %d ", numRow));
-            output.append(EscapeSequences.RESET_BG_COLOR);
-            for (var c : row.toCharArray()) {
-                switch(c) {
-                    case '|' -> output.append(EscapeSequences.BORDER);
-                    case ' ' -> {
-                        i = toggle ? 0 : 1;
-                        toggle = !toggle;
-                        output.append(backgroundColors[i]);
-                        output.append(EscapeSequences.EMPTY);
-                        output.append(EscapeSequences.RESET_BG_COLOR);
-                    }
-                    default -> {
-                        i = toggle ? 0 : 1;
-                        toggle = !toggle;
-                        output.append(backgroundColors[i]);
-                        output.append(EscapeSequences.SET_TEXT_COLOR_BLACK);
-                        output.append(parseChessCharacter(c));
-                        output.append(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
-                        output.append(EscapeSequences.RESET_BG_COLOR);
-                    }
-                }
-            }
-            output.append(EscapeSequences.SET_BG_COLOR_TAN);
-            output.append(String.format(" %d ", numRow));
-            output.append(EscapeSequences.RESET_BG_COLOR);
-            output.append("\n");
-            numRow--;
-        }
-        output.append(EscapeSequences.SET_BG_COLOR_TAN);
-        output.append("   \u2009\u200A");
-        for (char col = 'a'; col < 'i'; col++) {
-            output.append("\u2000");
-            output.append(col);
-            output.append("\u2000");
-        }
-        output.append("\u2009\u200A   ");
-        output.append(EscapeSequences.RESET_BG_COLOR);
+        output.append(printHeader('a', 'i', 1));
+        output.append("\n");
+        output.append(printBody(numRow, -1, toggle, rows));
+        output.append(printHeader('a', 'i', 1));
 
         return output.toString();
     }
@@ -204,19 +158,36 @@ public class GameplayClient implements GameHandler {
         boolean toggle = false;
 
         StringBuilder output = new StringBuilder();
+        int numRow = 1;
+
+        output.append(printHeader('h', 'a', -1));
+        output.append("\n");
+        output.append(printBody(numRow, 1, toggle, rows));
+        output.append(printHeader('h', 'a', -1));
+
+        return output.toString();
+    }
+
+    private String printHeader(char startChar, char endChar, int increment) {
+        StringBuilder output = new StringBuilder();
         output.append(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
         output.append(EscapeSequences.SET_BG_COLOR_TAN);
-        int numRow = 1;
         output.append("   \u2009\u200A");
-        for (char col = 'h'; col >= 'a'; col--) {
+        for (char col = startChar; (increment == 1 && col < endChar) || (increment == -1 && col >= endChar); col+=increment) {
             output.append("\u2000");
             output.append(col);
             output.append("\u2000");
         }
         output.append("\u2009\u200A   ");
         output.append(EscapeSequences.RESET_BG_COLOR);
-        output.append("\n");
 
+        return output.toString();
+    }
+
+    private String printBody(int startRow, int increment, boolean toggle, String[] rows) {
+        StringBuilder output = new StringBuilder();
+        int numRow = startRow;
+        int i = 0;
         for (var row : rows) {
             i = toggle ? 0 : 1;
             toggle = !toggle;
@@ -248,23 +219,11 @@ public class GameplayClient implements GameHandler {
             output.append(String.format(" %d ", numRow));
             output.append(EscapeSequences.RESET_BG_COLOR);
             output.append("\n");
-            numRow++;
+            numRow+=increment;
         }
-        output.append(EscapeSequences.SET_BG_COLOR_TAN);
-        output.append("   \u2009\u200A");
-        for (char col = 'h'; col >= 'a'; col--) {
-            output.append("\u2000");
-            output.append(col);
-            output.append("\u2000");
-        }
-
-        output.append("\u2009\u200A   ");
-        output.append(EscapeSequences.RESET_BG_COLOR);
 
         return output.toString();
     }
-
-
 }
 
 

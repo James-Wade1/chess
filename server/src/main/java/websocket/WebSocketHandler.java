@@ -9,6 +9,7 @@ import responseException.ResponseException;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -38,7 +39,10 @@ public class WebSocketHandler {
                 JoinPlayerCommand command = new Gson().fromJson(message, JoinPlayerCommand.class);
                 joinPlayer(session, command);
             }
-            case JOIN_OBSERVER -> {}
+            case JOIN_OBSERVER -> {
+                JoinObserverCommand command = new Gson().fromJson(message, JoinObserverCommand.class);
+                joinObserver(session, command);
+            }
             case MAKE_MOVE -> {}
             case LEAVE -> {}
             case RESIGN -> {}
@@ -56,6 +60,19 @@ public class WebSocketHandler {
         String notificationMessage = String.format("%s joined the game as the %s player", myAuthDAO.getAuth(authToken).username(), command.getPlayerColor().name().toLowerCase());
         broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
     }
+
+    private void joinObserver(Session session, JoinObserverCommand command) throws IOException, ResponseException {
+        int gameID = command.getGameID();
+        String authToken = command.getAuthString();
+        this.sessions.addSessionToGame(gameID, authToken, session);
+
+        LoadGameMessage rootMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGameDAO.getGame(gameID).game());
+        sendMessage(gameID, rootMessage, authToken);
+
+        String notificationMessage = String.format("%s joined the game as an observer", myAuthDAO.getAuth(authToken).username());
+        broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
+    }
+
     @OnWebSocketConnect
     public void onConnect(Session session) {}
 

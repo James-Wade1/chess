@@ -14,7 +14,14 @@ public class WebSocketSessions {
     }
 
     public void addSessionToGame(int gameID, String authToken, Session session) {
-        sessionMap.get(gameID).put(authToken, session);
+        HashMap<String, Session> gameSessions = sessionMap.get(gameID);
+
+        if (gameSessions == null) {
+            gameSessions = new HashMap<>();
+            sessionMap.put(gameID, gameSessions);
+        }
+
+        gameSessions.put(authToken, session);
     }
 
     public void removeSessionFromGame(int gameID, String authToken, Session session) {

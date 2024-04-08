@@ -22,9 +22,9 @@ public class ConsoleUI implements NotificationHandler {
         String result = "";
         System.out.println(EscapeSequences.BLACK_KNIGHT + "Welcome to your Chessgame. Select from the options below:");
         System.out.println(client.help());
+        printPrompt();
 
         while(!result.equals("Quit")) {
-            printPrompt();
             String line = userInput.nextLine();
 
             try {
@@ -33,6 +33,7 @@ public class ConsoleUI implements NotificationHandler {
             } catch (Throwable ex) {
                 System.out.println(ex.getMessage());
             }
+            printPrompt();
         }
         System.out.println();
         System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Thanks for playing!");
@@ -42,7 +43,9 @@ public class ConsoleUI implements NotificationHandler {
         System.out.print("\n" + EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY + client.getUserState() + " >>> " + EscapeSequences.SET_TEXT_COLOR_GREEN);
     }
     @Override
-    public void printNotification(String message) {
+    public void notify(String message) {
+        System.out.println();
         System.out.println(message);
+        printPrompt();
     }
 }

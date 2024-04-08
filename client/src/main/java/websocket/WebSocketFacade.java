@@ -1,4 +1,5 @@
 package websocket;
+import chess.ChessGame;
 import com.google.gson.Gson;
 import responseException.ResponseException;
 import ui.EscapeSequences;
@@ -6,11 +7,12 @@ import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import javax.websocket.*;
 
 public class WebSocketFacade extends Endpoint {
@@ -41,9 +43,11 @@ public class WebSocketFacade extends Endpoint {
                         }
                         else if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
                             NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
-                            gameHandler.printMessage(EscapeSequences.SET_TEXT_COLOR_GREEN + notificationMessage.getMessage());
+                            gameHandler.printMessage(EscapeSequences.SET_TEXT_COLOR_BLUE + notificationMessage.getMessage());
                         }
-                        throw new Exception("Error: Invalid server message");
+                        else {
+                            throw new Exception("Error: Invalid server message");
+                        }
                     } catch (Exception ex) {
                         gameHandler.printMessage(EscapeSequences.SET_TEXT_COLOR_RED + ex.getMessage());
                     }
@@ -56,8 +60,39 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void send(UserGameCommand command) throws Exception {
+    private void send(UserGameCommand command) throws IOException {
         this.session.getBasicRemote().sendText(new Gson().toJson(command));
+    }
+
+    public void joinPlayer(String userInput, String authToken) throws IOException {
+        var tokens = userInput.split(" ");
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        ChessGame.TeamColor playerColor;
+        if (params[1].equalsIgnoreCase("WHITE")) {
+            playerColor = ChessGame.TeamColor.WHITE;
+        }
+        else {
+            playerColor = ChessGame.TeamColor.BLACK;
+        }
+        send(new JoinPlayerCommand(UserGameCommand.CommandType.JOIN_PLAYER, authToken, Integer.parseInt(params[0]), playerColor));
+    }
+
+    public void joinObserver(String userInput, String authToken) throws IOException {
+        var tokens = userInput.split(" ");
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        send(new JoinObserverCommand(UserGameCommand.CommandType.JOIN_OBSERVER, authToken, Integer.parseInt(params[0])));
+    }
+
+    public void makeMove(MakeMoveCommand command) throws IOException {
+        send(command);
+    }
+
+    public void leaveGame(LeaveCommand command) throws IOException {
+        send(command);
+    }
+
+    public void resignGame(ResignCommand command) throws IOException {
+        send(command);
     }
 
     @Override

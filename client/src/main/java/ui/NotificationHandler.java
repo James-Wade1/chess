@@ -1,5 +1,5 @@
 package ui;
 
 public interface NotificationHandler {
-    public void printNotification(String message);
+    public void notify(String message);
 }

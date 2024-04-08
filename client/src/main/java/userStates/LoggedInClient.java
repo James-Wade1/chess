@@ -69,7 +69,7 @@ public class LoggedInClient {
     private String joinGame(String... params) throws UIException, ResponseException {
         if (params.length == 2) {
             server.joinGame(new PlayerJoinRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
-            return String.format("User joined game %s as %s player", params[0], params[1].toLowerCase());
+            return "";
         }
         throw new UIException("Expected: JoinGame <gameID> <playerColor, white/black>");
     }
@@ -77,7 +77,7 @@ public class LoggedInClient {
     private String joinObserver(String... params) throws UIException, ResponseException {
         if (params.length == 1) {
             server.joinGame(new PlayerJoinRequest(null, Integer.parseInt(params[0])));
-            return String.format("User joined game %s as an observer", params[0]);
+            return "";
         }
         throw new UIException("Expected: JoinObserver <gameID>");
     }
