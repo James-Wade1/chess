@@ -31,6 +31,8 @@ public class GameplayClient implements GameHandler {
 
     boolean askingForPromotion = false;
 
+    boolean confirmingResign = false;
+
     public GameplayClient(ServerFacade server, String url, NotificationHandler notificationHandler) throws ResponseException {
         this.server = server;
         this.notificationHandler = notificationHandler;
@@ -85,13 +87,20 @@ public class GameplayClient implements GameHandler {
                 default -> "Unknown promotion selected. Please try again\n" + help();
             };
         }
+        if (confirmingResign) {
+            confirmingResign = false;
+            return switch(cmd) {
+                case "Y", "y" -> resignGame();
+                default -> "Invalid option. Please try again\n" + help();
+            };
+        }
         else {
             return switch (cmd) {
                 case "Help" -> help();
                 case "Redraw" -> redraw();
                 case "Leave" -> leaveGame();
                 case "MakeMove" -> makeMove(params);
-                case "Resign" -> "";
+                case "Resign" -> resignGame();
                 case "Highlight" -> highlightMoves(params);
                 default -> "Unknown command. Please try again\n" + help();
             };
@@ -149,6 +158,17 @@ public class GameplayClient implements GameHandler {
         return "";
     }
 
+    private String resignGame() throws IOException {
+        if (!confirmingResign) {
+            confirmingResign = true;
+            return "Are you sure you want to resign? (y/n): ";
+        }
+        else {
+            wsFacade.resignGame(this.currentGameID, server.getAuthToken());
+            return "";
+        }
+    }
+
     private String highlightMoves(String... params) throws ResponseException, InvalidMoveException, UIException {
         if (params.length != 1) {
             throw new UIException("Expected: Highlight <letter><number>");
@@ -159,8 +179,6 @@ public class GameplayClient implements GameHandler {
         String highlightedBoard = this.game.getValidMovesString(row, ((int) col) - 96);
         return printHighlightedBoard(highlightedBoard);
     }
-
-
 
     public void joinGame(String userInput) throws Exception {
         var tokens = userInput.split(" ");

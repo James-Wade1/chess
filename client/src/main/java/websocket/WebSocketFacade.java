@@ -93,8 +93,8 @@ public class WebSocketFacade extends Endpoint {
         send(new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
     }
 
-    public void resignGame(ResignCommand command) throws IOException {
-        send(command);
+    public void resignGame(int gameID, String authToken) throws IOException {
+        send(new ResignCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
     }
 
     @Override

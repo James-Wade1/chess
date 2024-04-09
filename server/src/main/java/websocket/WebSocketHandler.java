@@ -55,7 +55,10 @@ public class WebSocketHandler {
                 LeaveCommand command = new Gson().fromJson(message, LeaveCommand.class);
                 leaveGame(session, command);
             }
-            case RESIGN -> {}
+            case RESIGN -> {
+                ResignCommand command = new Gson().fromJson(message, ResignCommand.class);
+                resignGame(session, command);
+            }
         }
     }
 
@@ -131,7 +134,6 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         String authToken = command.getAuthString();
         GameData gameData = myGameDAO.getGame(gameID);
-        ChessGame game = gameData.game();
         ChessMove move = command.getMove();
         AuthData authData = myAuthDAO.getAuth(authToken);
 
@@ -139,10 +141,11 @@ public class WebSocketHandler {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid authtoken"));
             return;
         }
-        if (game == null) {
+        if (gameData == null) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid game ID"));
             return;
         }
+        ChessGame game = gameData.game();
         if (game.isGameOver()) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Game is over. No more moves allowed"));
             return;
@@ -207,7 +210,6 @@ public class WebSocketHandler {
             sendMessage(gameID, message, authToken);
             broadcastMessage(gameID, message, authToken);
         }
-        System.out.println(game.getBoard().toString());
     }
 
     private static NotificationMessage getNotificationMessage(ChessMove move, String username) {
@@ -239,6 +241,47 @@ public class WebSocketHandler {
         String notificationMessage = String.format("%s is leaving the game", myAuthDAO.getAuth(authToken).username());
         broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
         this.sessions.removeSessionFromGame(gameID, authToken, session);
+    }
+
+    private void resignGame(Session session, ResignCommand command) throws ResponseException, IOException {
+        int gameID = command.getGameID();
+        String authToken = command.getAuthString();
+        AuthData authData = myAuthDAO.getAuth(authToken);
+        GameData gameData = myGameDAO.getGame(gameID);
+
+        if (authData == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid authtoken"));
+            return;
+        }
+        if (gameData == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid game ID"));
+            return;
+        }
+        String resignedUser = authData.username();
+        String blackUsername = gameData.blackUsername();
+        String whiteUsername = gameData.whiteUsername();
+
+        if ((whiteUsername == null || !whiteUsername.equals(resignedUser)) && (blackUsername == null || !blackUsername.equals(resignedUser))) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: observer can't move pieces"));
+            return;
+        }
+
+        ChessGame game = gameData.game();
+
+        if (game.isGameOver()) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Game already resigned"));
+            return;
+        }
+        game.setGameOver(true);
+        try {
+            myGameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
+        } catch (DataAccessException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+
+        NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s resigned the game. Game over", resignedUser));
+        sendMessage(gameID, message, authToken);
+        broadcastMessage(gameID, message, authToken);
     }
 
     @OnWebSocketConnect

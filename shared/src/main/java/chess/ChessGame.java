@@ -350,6 +350,10 @@ public class ChessGame {
         return gameOver;
     }
 
+    public void setGameOver(boolean bool) {
+        gameOver = bool;
+    }
+
     private void movePiece(ChessMove move) {
         board.removePiece(move.getEndPosition());
         board.addPiece(move.getEndPosition(),board.getPiece(move.getStartPosition()));
