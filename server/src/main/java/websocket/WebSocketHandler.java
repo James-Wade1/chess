@@ -308,7 +308,6 @@ public class WebSocketHandler {
     }
 
     private void broadcastMessage(int gameID, ServerMessage message, String exceptThisAuthToken) throws IOException {
-        /*
         HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
         Iterator<Map.Entry<String, Session>> iterator = game.entrySet().iterator();
 
@@ -321,22 +320,8 @@ public class WebSocketHandler {
                 if (!authToken.equals(exceptThisAuthToken)) {
                     session.getRemote().sendString(new Gson().toJson(message));
                 }
-            }
-            else {
+            } else {
                 iterator.remove();
-            }
-        }
-
-         */
-
-        HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
-
-        for (Map.Entry<String, Session> entry : game.entrySet()) {
-            String authToken = entry.getKey();
-            Session session = entry.getValue();
-
-            if (!authToken.equals(exceptThisAuthToken)) {
-                session.getRemote().sendString(new Gson().toJson(message));
             }
         }
 
