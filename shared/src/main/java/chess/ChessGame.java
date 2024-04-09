@@ -151,6 +151,12 @@ public class ChessGame {
         return moves;
     }
 
+    public boolean isValidMove(ChessMove move) {
+        HashSet<ChessMove> moves = (HashSet<ChessMove>) validMoves(move.getStartPosition());
+
+        return moves.contains(move);
+    }
+
     /**
      * Makes a move in a chess game
      *
@@ -206,11 +212,11 @@ public class ChessGame {
             }
 
             else {
-                throw new InvalidMoveException();
+                throw new InvalidMoveException("Error: invalid move");
             }
         }
         else {
-            throw new InvalidMoveException();
+            throw new InvalidMoveException("Error: invalid move");
         }
     }
 
