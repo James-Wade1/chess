@@ -20,6 +20,7 @@ import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @WebSocket
@@ -105,12 +106,23 @@ public class WebSocketHandler {
     private void joinObserver(Session session, JoinObserverCommand command) throws IOException, ResponseException {
         int gameID = command.getGameID();
         String authToken = command.getAuthString();
-        this.sessions.addSessionToGame(gameID, authToken, session);
+        AuthData authData = myAuthDAO.getAuth(authToken);
+        if (authData == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: bad authToken"));
+            return;
+        }
+        String username = authData.username();
+        GameData game = myGameDAO.getGame(gameID);
+        if (game == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: bad game ID"));
+            return;
+        }
 
-        LoadGameMessage rootMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGameDAO.getGame(gameID).game());
+        this.sessions.addSessionToGame(gameID, authToken, session);
+        LoadGameMessage rootMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game());
         sendMessage(gameID, rootMessage, authToken);
 
-        String notificationMessage = String.format("%s joined the game as an observer", myAuthDAO.getAuth(authToken).username());
+        String notificationMessage = String.format("%s joined the game as an observer", username);
         broadcastMessage(gameID, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage), authToken);
     }
 
@@ -126,7 +138,9 @@ public class WebSocketHandler {
     public void onConnect(Session session) {}
 
     @OnWebSocketClose
-    public void onClose(int statusCode, String reason) {}
+    public void onClose(int statusCode, String reason) {
+        return;
+    }
 
     @OnWebSocketError
     public void onError(Throwable cause) {}
@@ -144,13 +158,22 @@ public class WebSocketHandler {
 
     private void broadcastMessage(int gameID, ServerMessage message, String exceptThisAuthToken) throws IOException {
         HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
+        Iterator<Map.Entry<String, Session>> iterator = game.entrySet().iterator();
 
-        for (Map.Entry<String, Session> entry : game.entrySet()) {
+        while (iterator.hasNext()) {
+            Map.Entry<String, Session> entry = iterator.next();
             String authToken = entry.getKey();
             Session session = entry.getValue();
-            if (!authToken.equals(exceptThisAuthToken)) {
-                session.getRemote().sendString(new Gson().toJson(message));
+
+            if (session.isOpen()) {
+                if (!authToken.equals(exceptThisAuthToken)) {
+                    session.getRemote().sendString(new Gson().toJson(message));
+                }
+            }
+            else {
+                iterator.remove();
             }
         }
+
     }
 }

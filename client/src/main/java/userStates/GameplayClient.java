@@ -5,6 +5,7 @@ import responseException.ResponseException;
 import serverFacade.ServerFacade;
 import ui.EscapeSequences;
 import ui.NotificationHandler;
+import ui.UIException;
 import websocket.GameHandler;
 import websocket.WebSocketFacade;
 
@@ -26,11 +27,16 @@ public class GameplayClient implements GameHandler {
 
     private static final String[] backgroundColors = {EscapeSequences.SET_BG_COLOR_TAN, EscapeSequences.SET_BG_COLOR_LIGHT_GREEN};
 
+    ChessMove potentialChessMove;
+
+    boolean askingForPromotion = false;
+
     public GameplayClient(ServerFacade server, String url, NotificationHandler notificationHandler) throws ResponseException {
         this.server = server;
         this.notificationHandler = notificationHandler;
         this.wsFacade = new WebSocketFacade(url, this);
         this.game = null;
+        potentialChessMove = null;
     }
 
     public String help() {
@@ -38,9 +44,19 @@ public class GameplayClient implements GameHandler {
                 - Help
                 - Redraw
                 - Leave
-                - MakeMove <letter<number> <letter><number
+                - MakeMove <letter<number> <letter><number>
                 - Resign
                 - Highlight <letter><number>
+                """;
+    }
+
+    public String selectPromotion() {
+        return """
+                Select promotion piece:
+                    1) Queen
+                    2) Knight
+                    3) Rook
+                    4) Bishop
                 """;
     }
 
@@ -55,31 +71,35 @@ public class GameplayClient implements GameHandler {
         notificationHandler.notify(message);
     }
 
-    public String eval(String userInput) throws ResponseException, InvalidMoveException, IOException {
+    public String eval(String userInput) throws ResponseException, InvalidMoveException, IOException, UIException {
         var tokens = userInput.split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "Help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-        return switch (cmd) {
-            case "Help" -> help();
-            case "Redraw" -> redraw();
-            case "Leave" -> leaveGame();
-            case "MakeMove" -> "";
-            case "Resign" -> "";
-            case "Highlight" -> highlightMoves(Character.getNumericValue(params[0].charAt(1)), params[0].charAt(0));
-            default -> "Unknown command. Please try again\n" + help();
-        };
+        if (askingForPromotion) {
+            askingForPromotion = false;
+            return switch(cmd) {
+                case "1" -> makeMove("queen");
+                case "2" -> makeMove("knight");
+                case "3" -> makeMove("rook");
+                case "4" -> makeMove("bishop");
+                default -> "Unknown promotion selected. Please try again\n" + help();
+            };
+        }
+        else {
+            return switch (cmd) {
+                case "Help" -> help();
+                case "Redraw" -> redraw();
+                case "Leave" -> leaveGame();
+                case "MakeMove" -> makeMove(params);
+                case "Resign" -> "";
+                case "Highlight" -> highlightMoves(params);
+                default -> "Unknown command. Please try again\n" + help();
+            };
+        }
     }
 
     private String redraw() {
         return printBoard();
-    }
-
-    private String highlightMoves(int row, char col) throws ResponseException, InvalidMoveException {
-        if (row < 1 || row > 8 || col < 'a' || col > 'h') {
-            throw new ResponseException(500, "Invalid boundaries");
-        }
-        String highlightedBoard = this.game.getValidMovesString(row, ((int) col) - 96);
-        return printHighlightedBoard(highlightedBoard);
     }
 
     private String leaveGame() throws IOException {
@@ -87,6 +107,60 @@ public class GameplayClient implements GameHandler {
         this.currentGameID = -1;
         return "";
     }
+
+    private String makeMove(String... params) throws ResponseException, UIException, IOException {
+        if (!askingForPromotion) {
+            if (params.length != 2) {
+                throw new UIException("MakeMove <letter<number> <letter><number>");
+            }
+            int startRow = Character.getNumericValue(params[0].charAt(1));
+            char startCol = params[0].charAt(0);
+            int endRow = Character.getNumericValue(params[1].charAt(1));
+            char endCol = params[1].charAt(0);
+
+            checkInBounds(startRow, startCol);
+            checkInBounds(endRow, endCol);
+            ChessPosition startPosition = new ChessPosition(startRow, ((int) startCol) - 96);
+            ChessPosition endPosition = new ChessPosition(endRow, ((int) endCol) - 96);
+            potentialChessMove = new ChessMove(startPosition, endPosition, null);
+
+            ChessPiece piece = game.getBoard().getPiece(startPosition);
+            if (piece != null && piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                askingForPromotion = true;
+                return selectPromotion();
+            }
+        }
+        else {
+            if (params.length != 1) {
+                throw new UIException("Invalid promotion piece selected");
+            }
+            ChessPiece.PieceType type = switch(params[0]) {
+                case "queen" -> ChessPiece.PieceType.QUEEN;
+                case "knight" -> ChessPiece.PieceType.KNIGHT;
+                case "bishop" -> ChessPiece.PieceType.BISHOP;
+                case "rook" -> ChessPiece.PieceType.ROOK;
+                default -> throw new UIException("Invalid promotion piece selected");
+            };
+            potentialChessMove.setPromotionPiece(type);
+        }
+
+        wsFacade.makeMove(this.currentGameID, potentialChessMove, server.getAuthToken());
+
+        return "";
+    }
+
+    private String highlightMoves(String... params) throws ResponseException, InvalidMoveException, UIException {
+        if (params.length != 1) {
+            throw new UIException("Expected: Highlight <letter><number>");
+        }
+        int row = Character.getNumericValue(params[0].charAt(1));
+        char col = params[0].charAt(0);
+        checkInBounds(row, col);
+        String highlightedBoard = this.game.getValidMovesString(row, ((int) col) - 96);
+        return printHighlightedBoard(highlightedBoard);
+    }
+
+
 
     public void joinGame(String userInput) throws Exception {
         var tokens = userInput.split(" ");
@@ -122,6 +196,12 @@ public class GameplayClient implements GameHandler {
         }
         else {
             return printBlackBottom(board);
+        }
+    }
+
+    private void checkInBounds(int row, char col) throws ResponseException {
+        if (row < 1 || row > 8 || col < 'a' || col > 'h') {
+            throw new ResponseException(500, "Invalid boundaries");
         }
     }
 

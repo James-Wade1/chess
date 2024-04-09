@@ -1,5 +1,6 @@
 package websocket;
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import responseException.ResponseException;
 import ui.EscapeSequences;
@@ -83,8 +84,9 @@ public class WebSocketFacade extends Endpoint {
         send(new JoinObserverCommand(UserGameCommand.CommandType.JOIN_OBSERVER, authToken, Integer.parseInt(params[0])));
     }
 
-    public void makeMove(MakeMoveCommand command) throws IOException {
-        send(command);
+    public void makeMove(int gameID, ChessMove move, String authToken) throws IOException {
+        MakeMoveCommand makeMoveCommand = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
+        send(makeMoveCommand);
     }
 
     public void leaveGame(String authToken, int gameID) throws IOException {
