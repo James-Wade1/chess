@@ -18,6 +18,7 @@ import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -310,6 +311,7 @@ public class WebSocketHandler {
     private void broadcastMessage(int gameID, ServerMessage message, String exceptThisAuthToken) throws IOException {
         HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
         Iterator<Map.Entry<String, Session>> iterator = game.entrySet().iterator();
+        HashSet<Session> closedSessions = new HashSet<>();
 
         while (iterator.hasNext()) {
             Map.Entry<String, Session> entry = iterator.next();
@@ -321,8 +323,12 @@ public class WebSocketHandler {
                     session.getRemote().sendString(new Gson().toJson(message));
                 }
             } else {
-                iterator.remove();
+                closedSessions.add(session);
             }
+        }
+
+        for (Session session : closedSessions) {
+            sessions.removeSession(session);
         }
 
     }
