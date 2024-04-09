@@ -2,6 +2,7 @@ package chess;
 
 import responseException.ResponseException;
 
+import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -255,7 +256,23 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         ChessPosition kingPosition = board.getKingPosition(teamColor);
         HashSet<ChessMove> potentialMoves = board.getPiece(kingPosition).pieceMoves(board,kingPosition);
-        boolean result = isInCheck(teamColor) && isInStalemate(teamColor);
+        boolean result = false;
+        ChessBoard boardCopy = new ChessBoard(board);
+
+        if (isInCheck(teamColor)) {
+            result = true;
+            for (ChessPosition position : boardCopy.getColorPieces(teamColor)) {
+                potentialMoves = boardCopy.getPiece(kingPosition).pieceMoves(boardCopy, position);
+                for (ChessMove potentialMove : potentialMoves) {
+                    movePiece(potentialMove);
+                    if (!isInCheck(teamColor)) {
+                        result = false;
+                    }
+
+                    board = new ChessBoard(boardCopy);
+                }
+            }
+        }
 
         if (result) {
             this.gameOver = true;
@@ -276,17 +293,33 @@ public class ChessGame {
 
         ChessBoard boardCopy = new ChessBoard(board);
 
-        if (!isInCheck(teamColor)) {
-
+        if (isInCheck(teamColor)) {
+            return false;
         }
+        else {
+            for (ChessMove potentialMove : potentialMoves) {
+                movePiece(potentialMove);
+                if (!isInCheck(teamColor)) {
+                    return false;
+                }
 
-        for (ChessMove potentialMove : potentialMoves) {
-            movePiece(potentialMove);
-            if (!isInCheck(teamColor)) {
-                return false;
+                board = new ChessBoard(boardCopy);
             }
 
-            board = new ChessBoard(boardCopy);
+            for (ChessPosition position : board.getColorPieces(teamColor)) {
+                if (position.equals(kingPosition)) {
+                    continue;
+                }
+                potentialMoves = board.getPiece(kingPosition).pieceMoves(board, position);
+                for (ChessMove potentialMove : potentialMoves) {
+                    movePiece(potentialMove);
+                    if (!isInCheck(teamColor)) {
+                        return false;
+                    }
+
+                    board = new ChessBoard(boardCopy);
+                }
+            }
         }
 
         board = boardCopy;
