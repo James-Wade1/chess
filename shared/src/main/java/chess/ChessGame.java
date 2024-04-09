@@ -24,12 +24,15 @@ public class ChessGame {
 
     ChessPosition previousMoveDoublePawnLocation;
 
+    boolean gameOver;
+
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         previousMoveDoublePawn = false;
         previousMoveDoublePawnLocation = null;
         board = new ChessBoard();
         board.resetBoard();
+        gameOver = false;
     }
 
     /**
@@ -151,12 +154,6 @@ public class ChessGame {
         return moves;
     }
 
-    public boolean isValidMove(ChessMove move) {
-        HashSet<ChessMove> moves = (HashSet<ChessMove>) validMoves(move.getStartPosition());
-
-        return moves.contains(move);
-    }
-
     /**
      * Makes a move in a chess game
      *
@@ -258,8 +255,12 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         ChessPosition kingPosition = board.getKingPosition(teamColor);
         HashSet<ChessMove> potentialMoves = board.getPiece(kingPosition).pieceMoves(board,kingPosition);
+        boolean result = isInCheck(teamColor) && isInStalemate(teamColor);
 
-        return isInCheck(teamColor) && isInStalemate(teamColor);
+        if (result) {
+            this.gameOver = true;
+        }
+        return result;
     }
 
     /**
@@ -275,6 +276,10 @@ public class ChessGame {
 
         ChessBoard boardCopy = new ChessBoard(board);
 
+        if (!isInCheck(teamColor)) {
+
+        }
+
         for (ChessMove potentialMove : potentialMoves) {
             movePiece(potentialMove);
             if (!isInCheck(teamColor)) {
@@ -285,6 +290,7 @@ public class ChessGame {
         }
 
         board = boardCopy;
+        this.gameOver = true;
 
         return true;
     }
@@ -305,6 +311,10 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     private void movePiece(ChessMove move) {

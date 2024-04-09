@@ -1,11 +1,9 @@
 package websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import model.AuthData;
 import model.GameData;
@@ -132,7 +130,8 @@ public class WebSocketHandler {
     private void makeMove(Session session, MakeMoveCommand command) throws ResponseException, IOException {
         int gameID = command.getGameID();
         String authToken = command.getAuthString();
-        ChessGame game = myGameDAO.getGame(gameID).game();
+        GameData gameData = myGameDAO.getGame(gameID);
+        ChessGame game = gameData.game();
         ChessMove move = command.getMove();
         AuthData authData = myAuthDAO.getAuth(authToken);
 
@@ -144,20 +143,71 @@ public class WebSocketHandler {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid game ID"));
             return;
         }
+        if (game.isGameOver()) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: Game is over. No more moves allowed"));
+            return;
+        }
         String username = authData.username();
+        String blackUsername = gameData.blackUsername();
+        String whiteUsername = gameData.whiteUsername();
+        ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
 
         try {
+            if (blackUsername != null && blackUsername.equals(username) && piece.getTeamColor() != ChessGame.TeamColor.BLACK) {
+                throw new InvalidMoveException("Error: wrong team's piece");
+            }
+            else if (whiteUsername != null && whiteUsername.equals(username) && piece.getTeamColor() != ChessGame.TeamColor.WHITE) {
+                throw new InvalidMoveException("Error: wrong team's piece");
+            }
+            if ((whiteUsername == null || !whiteUsername.equals(username)) && (blackUsername == null || !blackUsername.equals(username))) {
+                throw new InvalidMoveException("Error: observer can't move pieces");
+            }
+
             game.makeMove(move);
-        } catch (InvalidMoveException ex) {
+            myGameDAO.updateGame(new GameData(gameID, whiteUsername, blackUsername, gameData.gameName(), game));
+        } catch (InvalidMoveException | DataAccessException ex) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
             return;
         }
 
         LoadGameMessage rootMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         sendMessage(gameID, rootMessage, authToken);
+        broadcastMessage(gameID, rootMessage, authToken);
 
         NotificationMessage notificationMessage = getNotificationMessage(move, username);
         broadcastMessage(gameID, notificationMessage, authToken);
+
+        ChessGame.TeamColor opponentColor = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        String opponentUsername;
+        String playerUsername;
+
+        if (opponentColor == ChessGame.TeamColor.WHITE) {
+            opponentUsername = whiteUsername;
+            playerUsername = blackUsername;
+        }
+        else {
+            opponentUsername = blackUsername;
+            playerUsername = whiteUsername;
+        }
+
+        if (game.isInCheckmate(opponentColor)) {
+            NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in checkmate. %s wins!", opponentUsername, playerUsername));
+            sendMessage(gameID, message, authToken);
+            broadcastMessage(gameID, message, authToken);
+        }
+
+        else if (game.isInStalemate(opponentColor)) {
+            NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in stalemate. It's a draw", opponentUsername));
+            sendMessage(gameID, message, authToken);
+            broadcastMessage(gameID, message, authToken);
+        }
+
+        else if (game.isInCheck(opponentColor)) {
+            NotificationMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in check", opponentUsername));
+            sendMessage(gameID, message, authToken);
+            broadcastMessage(gameID, message, authToken);
+        }
+        System.out.println(game.getBoard().toString());
     }
 
     private static NotificationMessage getNotificationMessage(ChessMove move, String username) {
@@ -215,6 +265,7 @@ public class WebSocketHandler {
     }
 
     private void broadcastMessage(int gameID, ServerMessage message, String exceptThisAuthToken) throws IOException {
+        /*
         HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
         Iterator<Map.Entry<String, Session>> iterator = game.entrySet().iterator();
 
@@ -230,6 +281,19 @@ public class WebSocketHandler {
             }
             else {
                 iterator.remove();
+            }
+        }
+
+         */
+
+        HashMap<String, Session> game = sessions.getSessionsForGame(gameID);
+
+        for (Map.Entry<String, Session> entry : game.entrySet()) {
+            String authToken = entry.getKey();
+            Session session = entry.getValue();
+
+            if (!authToken.equals(exceptThisAuthToken)) {
+                session.getRemote().sendString(new Gson().toJson(message));
             }
         }
 
