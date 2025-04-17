@@ -8,7 +8,6 @@ import responseException.ResponseException;
 import model.GameIDResponse;
 import model.GameResponseClass;
 import model.PlayerJoinRequest;
-import websocket.WebSocketFacade;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +20,7 @@ import java.net.URL;
 public class ServerFacade {
 
     String serverURL = "";
-    private AuthData authToken = null;
+    private AuthData authData = null;
 
     public ServerFacade(String serverURL) throws ResponseException {
         this.serverURL = serverURL;
@@ -29,12 +28,12 @@ public class ServerFacade {
 
     public void registerUser(UserData newUser) throws ResponseException {
         String path = "/user";
-        this.makeRequest("POST", path, newUser, null, false);
+        authData = this.makeRequest("POST", path, newUser, AuthData.class, false);
     }
 
     public void loginUser(UserData returningUser) throws ResponseException {
         String path = "/session";
-        authToken = this.makeRequest("POST", path, returningUser, AuthData.class, false);
+        authData = this.makeRequest("POST", path, returningUser, AuthData.class, false);
     }
 
     public void logoutUser() throws ResponseException {
@@ -68,7 +67,7 @@ public class ServerFacade {
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             if (authTokenNeeded) {
-                http.addRequestProperty("authorization", authToken.authToken());
+                http.addRequestProperty("authorization", authData.authToken());
             }
             if (request != null) {
                 http.setDoOutput(true);
@@ -115,6 +114,6 @@ public class ServerFacade {
     }
 
     public String getAuthToken() {
-        return authToken.authToken();
+        return authData.authToken();
     }
 }

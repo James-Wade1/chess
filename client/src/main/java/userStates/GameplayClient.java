@@ -78,7 +78,6 @@ public class GameplayClient implements GameHandler {
         String cmd = (tokens.length > 0) ? tokens[0] : "Help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
         if (askingForPromotion) {
-            askingForPromotion = false;
             return switch(cmd) {
                 case "1" -> makeMove("queen");
                 case "2" -> makeMove("knight");
@@ -88,20 +87,19 @@ public class GameplayClient implements GameHandler {
             };
         }
         if (confirmingResign) {
-            confirmingResign = false;
             return switch(cmd) {
                 case "Y", "y" -> resignGame();
                 default -> "Invalid option. Please try again\n" + help();
             };
         }
         else {
-            return switch (cmd) {
-                case "Help" -> help();
-                case "Redraw" -> redraw();
-                case "Leave" -> leaveGame();
-                case "MakeMove" -> makeMove(params);
-                case "Resign" -> resignGame();
-                case "Highlight" -> highlightMoves(params);
+            return switch (cmd.toLowerCase()) {
+                case "help" -> help();
+                case "redraw" -> redraw();
+                case "leave" -> leaveGame();
+                case "makemove" -> makeMove(params);
+                case "resign" -> resignGame();
+                case "highlight" -> highlightMoves(params);
                 default -> "Unknown command. Please try again\n" + help();
             };
         }
@@ -120,7 +118,7 @@ public class GameplayClient implements GameHandler {
     private String makeMove(String... params) throws ResponseException, UIException, IOException {
         if (!askingForPromotion) {
             if (params.length != 2) {
-                throw new UIException("MakeMove <letter<number> <letter><number>");
+                throw new UIException("MakeMove <letter><number> <letter><number>");
             }
             int startRow = Character.getNumericValue(params[0].charAt(1));
             char startCol = params[0].charAt(0);
@@ -135,11 +133,14 @@ public class GameplayClient implements GameHandler {
 
             ChessPiece piece = game.getBoard().getPiece(startPosition);
             if (piece != null && piece.getPieceType() == ChessPiece.PieceType.PAWN) {
-                askingForPromotion = true;
-                return selectPromotion();
+                if ((piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getRow() == 1) || (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8)) {
+                    askingForPromotion = true;
+                    return selectPromotion();
+                }
             }
         }
         else {
+            askingForPromotion = false;
             if (params.length != 1) {
                 throw new UIException("Invalid promotion piece selected");
             }
@@ -164,6 +165,7 @@ public class GameplayClient implements GameHandler {
             return "Are you sure you want to resign? (y/n): ";
         }
         else {
+            confirmingResign = false;
             wsFacade.resignGame(this.currentGameID, server.getAuthToken());
             return "";
         }

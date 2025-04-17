@@ -19,12 +19,12 @@ public class LoggedOutClient {
         var tokens = userInput.split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "Help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-        return switch (cmd) {
-            case "Quit" -> "Quit";
-            case "Help" -> help();
-            case "Login" -> login(params);
-            case "Register" -> register(params);
-            case "Delete" -> delete(params);
+        return switch (cmd.toLowerCase()) {
+            case "quit" -> "Quit";
+            case "help" -> help();
+            case "login" -> login(params);
+            case "register" -> register(params);
+            case "delete" -> delete(params);
             default -> "Unknown command. Please try again (check if you're logged in)";
         };
     }
@@ -52,7 +52,7 @@ public class LoggedOutClient {
         if (params.length == 3) {
             UserData newUser = new UserData(params[0], params[1], params[2]);
             server.registerUser(newUser);
-            return String.format("Registered user %s", params[0]);
+            return String.format("Registered and logged in user %s", params[0]);
         }
         throw new UIException("Expected: Register <username> <password> <email>");
     }

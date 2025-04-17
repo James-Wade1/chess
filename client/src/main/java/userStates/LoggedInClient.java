@@ -20,14 +20,14 @@ public class LoggedInClient {
         var tokens = userInput.split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "Help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-        return switch (cmd) {
-            case "Help" -> help();
-            case "Logout" -> logout(params);
-            case "CreateGame" -> createGame(params);
-            case "ListGames" -> listGames(params);
-            case "JoinGame" -> joinGame(params);
-            case "JoinObserver" -> joinObserver(params);
-            case "Delete" -> delete(params);
+        return switch (cmd.toLowerCase()) {
+            case "help" -> help();
+            case "logout" -> logout(params);
+            case "creategame" -> createGame(params);
+            case "listgames" -> listGames(params);
+            case "joingame" -> joinGame(params);
+            case "joinobserver" -> joinObserver(params);
+            case "delete" -> delete(params);
             default -> "Unknown command. Please try again";
         };
     }

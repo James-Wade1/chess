@@ -38,7 +38,7 @@ public class ChessClient {
             String output = "";
             if (state == UserState.LOGGEDOUT) {
                 output = loggedOutClient.eval(userInput);
-                if (tokens[0].equals("Login")) {
+                if (tokens[0].equalsIgnoreCase("Login") || tokens[0].equalsIgnoreCase("Register")) {
                     state = UserState.LOGGEDIN;
                 }
                 return output;
@@ -46,9 +46,9 @@ public class ChessClient {
             else if (state == UserState.LOGGEDIN) {
                 output = loggedInClient.eval(userInput);
 
-                switch (tokens[0]) {
-                    case "Logout", "Delete" -> state = UserState.LOGGEDOUT;
-                    case "JoinGame", "JoinObserver" -> {
+                switch (tokens[0].toLowerCase()) {
+                    case "logout", "delete" -> state = UserState.LOGGEDOUT;
+                    case "joingame", "joinobserver" -> {
                         this.gameplayClient = new GameplayClient(this.server, this.serverURL, this.notificationHandler);
                         this.gameplayClient.joinGame(userInput);
                         state = UserState.GAMEPLAY;
@@ -58,7 +58,7 @@ public class ChessClient {
             }
             else if (state == UserState.GAMEPLAY) {
                 output = gameplayClient.eval(userInput);
-                if (tokens[0].equals("Leave")) {
+                if (tokens[0].equalsIgnoreCase("Leave")) {
                     state = UserState.LOGGEDIN;
                 }
                 return output;
